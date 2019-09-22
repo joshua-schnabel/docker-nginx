@@ -34,4 +34,5 @@ HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 
 STOPSIGNAL SIGTERM
 
+CMD ["nginx", "-g", "daemon off;"]
 ENTRYPOINT [ "/startup.sh" ]

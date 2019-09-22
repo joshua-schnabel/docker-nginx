@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+set -e
+
 echo "Starting Version $IMAGE_VERSION"
 
-nginx -g daemon off;
+exec "$@"
