@@ -34,4 +34,4 @@ HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 
 STOPSIGNAL SIGTERM
 
-CMD ["sh", "/startup.sh"]
+ENTRYPOINT [ "/startup.sh" ]
