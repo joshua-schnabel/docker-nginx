@@ -30,6 +30,8 @@ VOLUME /media/certs
 VOLUME /media/config
 VOLUME /media/webroot
 
+HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
+
 STOPSIGNAL SIGTERM
 
 CMD ["/startup.sh"]
