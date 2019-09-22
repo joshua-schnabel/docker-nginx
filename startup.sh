@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Starting Version $IMAGE_VERSION"
+NGINXVERSION="$(nginx -v)"
+echo "Starting Image Version $IMAGE_VERSION with ${NGINXVERSION} ..."
 
 exec "$@"
