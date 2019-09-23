@@ -22,7 +22,8 @@ RUN mkdir -p /media/webroot && \
     
 ADD ./nginx.conf /etc/nginx/nginx.conf
 ADD ./config /media/config
-ADD ./startup.sh /startup.sh
+
+COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /startup.sh
 
@@ -34,5 +35,5 @@ HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 
 STOPSIGNAL SIGTERM
 
-CMD ["nginx", "-g", "daemon off;"]
-ENTRYPOINT ["/bin/bash", "/startup.sh" ]
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["nginx -g 'daemon off;'"]
