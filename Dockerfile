@@ -7,7 +7,7 @@ ENV DISABLETLS="false"
 
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
-    apk --no-cache add bash curl && \
+    apk --no-cache add bash curl openssl && \
     apk --no-cache add nginx nginx-mod-http-headers-more nginx-mod-http-lua
 
 # Ensure www-data user exists
@@ -16,14 +16,13 @@ RUN set -x ; \
     addgroup -g 82 -S www-data ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
 
-# Setup folders
-RUN mkdir -p /media/data/webroot && \
-    mkdir -p /media/data/certs && \
-    mkdir -p /media/data/dhparams && \
-    mkdir -p /media/data/config
-    
 ADD ./nginx.conf /etc/nginx/nginx.conf
-ADD ./config /media/data/config
+ADD ./data /media/data
+
+# Setup folders
+RUN mkdir -p /media/data && \
+    mkdir -p /media/data/certs && \
+    mkdir -p /media/data/dhparams
 
 COPY entrypoint.sh /usr/local/bin/
 
