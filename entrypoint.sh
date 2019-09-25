@@ -29,12 +29,12 @@ else
     echo "Keep config in ${SITESENABLED_DIR}"
 fi
 
-if [! -f "$L_DHFILE" ]; then
+if [! -f "$L_DHFILE" ] && [ "$DISABLETLS" -eq "false" ]; then
     echo "$L_DHFILE doesn't exist, create it, but it takes some time..."
 	openssl dhparam -out "$($L_DHFILE)" 4096
 fi
 
-if [! -f "$L_CERTFILE" ]; then
+if [! -f "$L_CERTFILE" ] && [ "$DISABLETLS" -eq "false" ]; then
     echo "$L_CERTFILE doesn't exist, create it, but it takes some time..."
 	openssl req -x509 -newkey rsa:4096 -out "$($L_CERTFILE)" -keyout "$($L_KEYFILE)" -days 365 -nodes -subj '/CN=localhost'
 fi
