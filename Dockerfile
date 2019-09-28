@@ -42,4 +42,4 @@ HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 STOPSIGNAL SIGTERM
 
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["nginx -g 'daemon off;'"]
+CMD ["nginx", "-g", "daemon off;"]
