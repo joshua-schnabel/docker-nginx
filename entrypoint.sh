@@ -22,7 +22,7 @@ if [ -z "$(ls -A $L_SITESENABLED_DIR)" ]; then
 	cp -a /media/defaults/sites-enabled/. "$($L_SITESENABLED_DIR)"
 	if [ "$DISABLETLS" -eq "false" ]; then
 		echo "Copy default tls config to ${SITESENABLED_DIR}"
-		cp -a /media/defaults/sites-enabled-ssl/. "$($L_SITESENABLED_DIR)"
+		cp -a /media/defaults/sites-enabled-ssl/. "$L_SITESENABLED_DIR"
 	fi
 fi
 else
