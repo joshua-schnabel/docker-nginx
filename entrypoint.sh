@@ -41,4 +41,4 @@ fi
 echo "Starting container version $IMAGE_VERSION with nginx version ${nginxlocal}..."
 echo "Run $@"
 
-exec "$@"
+exec "$@" 2>&1
