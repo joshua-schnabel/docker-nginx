@@ -29,7 +29,7 @@ RUN mkdir -p /media/data && \
 
 COPY entrypoint.sh /usr/local/bin/
 
-RUN chmod +x /startup.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 VOLUME /media/data/logs
 VOLUME /media/data/certs
