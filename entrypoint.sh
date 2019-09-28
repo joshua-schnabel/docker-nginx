@@ -1,11 +1,11 @@
 #!/bin/bash
 set -Eeo pipefail
 
-L_SITESENABLED_DIR="/etc/nginx/sites-enabled/"
+L_SITESENABLED_DIR="/media/data/sites-enabled/"
 L_DISABLETLS="${DISABLETLS:-true}"
-L_DHFILE=/media/data/dhparams/4096.dh
-L_CERTFILE=/media/data/certs/default_cert.pem
-L_KEYFILE=/media/data/certs/default_key.pem
+L_DHFILE="/media/data/dhparams/dhparam4096.dh"
+L_CERTFILE="/media/data/certs/default_cert.pem"
+L_KEYFILE="/media/data/certs/default_key.pem"
 
 ### Get nginx version
 # https://stackoverflow.com/questions/50729099/bash-nginx-version-check-cut
@@ -18,11 +18,11 @@ nginxlocal=$(echo $nginxv | grep -o '[0-9.]*$')
 echo "Check if $L_SITESENABLED_DIR is empty"
 
 if [ -z "$(ls -A $L_SITESENABLED_DIR)" ]; then
-    echo "Copy default config to ${SITESENABLED_DIR}"
-	cp -a /media/data/config/sites-enabled/. "$($L_SITESENABLED_DIR)"
+    echo "Copy default config to ${L_SITESENABLED_DIR}"
+	cp -a /media/defaults/sites-enabled/. "$($L_SITESENABLED_DIR)"
 	if [ "$DISABLETLS" -eq "false" ]; then
 		echo "Copy default tls config to ${SITESENABLED_DIR}"
-		cp -a /media/data/config/sites-enabled-ssl/. "$($L_SITESENABLED_DIR)"
+		cp -a /media/defaults/sites-enabled-ssl/. "$($L_SITESENABLED_DIR)"
 	fi
 fi
 else

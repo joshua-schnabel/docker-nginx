@@ -18,9 +18,12 @@ RUN set -x ; \
 
 ADD ./nginx.conf /etc/nginx/nginx.conf
 ADD ./data /media/data
+ADD ./defaults /media/defaults
 
 # Setup folders
 RUN mkdir -p /media/data && \
+	mkdir -p /media/data/logs && \
+	mkdir -p /media/data/sites-enabled && \
     mkdir -p /media/data/certs && \
     mkdir -p /media/data/dhparams
 
@@ -28,10 +31,11 @@ COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /startup.sh
 
+VOLUME /media/data/logs
 VOLUME /media/data/certs
 VOLUME /media/data/dhparams
 VOLUME /media/data/webroot
-VOLUME /media/data/config
+VOLUME /media/data/sites-enabled
 
 HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 
