@@ -4,7 +4,6 @@ LABEL Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
 	  
 ENV IMAGE_VERSION="0.1.0-Beta"
 ENV DISABLETLS="false"
-ENV OPENSSL_CONF="/etc/nginx/openssl.conf"
 
 # Update packages and install packages 
 RUN apk update && apk upgrade && \

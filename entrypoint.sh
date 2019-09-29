@@ -41,4 +41,4 @@ fi
 echo "Starting container version $IMAGE_VERSION with nginx version ${nginxlocal}..."
 echo "Run $@"
 
-exec "$@" 2>&1
+exec env OPENSSL_CONF=/etc/nginx/openssl.conf "$@" 2>&1
