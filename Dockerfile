@@ -4,6 +4,7 @@ LABEL Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
 	  
 ENV IMAGE_VERSION="0.1.0-Beta"
 ENV DISABLETLS="false"
+ENV OPENSSL_CONF="/etc/nginx/openssl.conf"
 
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
@@ -17,6 +18,7 @@ RUN set -x ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
 
 ADD ./nginx.conf /etc/nginx/nginx.conf
+ADD ./openssl.conf /etc/nginx/openssl.conf
 ADD ./data /media/data
 ADD ./defaults /media/defaults
 
