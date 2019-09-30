@@ -2,4 +2,12 @@
 
 set -e
 
-printenv
+L_SOURCE_BRANCH="${SOURCE_BRANCH}"
+L_GIT_SHA1="${GIT_SHA1}"
+L_VERSION=line=$(head -n 1 ../CHANGELOG)
+
+echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1)"
+
+if [ "$L_SOURCE_BRANCH" = "master" ]; then
+  echo "Oh we are building master..."
+fi
