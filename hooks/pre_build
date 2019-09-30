@@ -4,8 +4,9 @@ set -e
 
 L_SOURCE_BRANCH="${SOURCE_BRANCH}"
 L_GIT_SHA1="${GIT_SHA1}"
-L_VERSION=line=$(head -n 1 ./CHANGELOG)
-L_MINORVERSION=${L_VERSION%.*}
+L_VERSION=$(head -n 1 ./CHANGELOG)
+L_VERSIONSUFFIX="$L_VERSION" | cut -d'_' -f 2
+L_MINORVERSION="${L_VERSION%.*}-${L_VERSIONSUFFIX}"
 
 echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1)"
 
@@ -14,4 +15,9 @@ echo "L_MINORVERSION = $L_MINORVERSION"
 
 if [ "$L_SOURCE_BRANCH" = "master" ]; then
   echo "Oh we are building master..."
+  echo "This version $L_VERSION is Part of series L_MINORVERSION"
+  if git rev-parse "$TAG" >/dev/null 2>&1; then
+    echo "Version $L_VERSION already exists";
+    exit 1;
+  fi
 fi
