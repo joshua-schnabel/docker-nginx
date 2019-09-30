@@ -11,4 +11,10 @@ L_MINORVERSION="${L_VERSION%.*}-${L_VERSIONSUFFIX}"
 if [ "$L_SOURCE_BRANCH" = "master" ]; then
   git tag "$L_VERSION"
   git push origin --tags
+  
+  docker tag $IMAGE_NAME ${DOCKER_REPO}:${L_VERSION}
+  docker push ${DOCKER_REPO}:${L_VERSION}
+  
+  docker tag $IMAGE_NAME ${DOCKER_REPO}:${L_MINORVERSION}
+  docker push ${DOCKER_REPO}:${L_MINORVERSION}
 fi
