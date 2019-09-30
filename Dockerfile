@@ -8,7 +8,7 @@ ENV DISABLETLS="false"
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl && \
-    apk --no-cache add nginx nginx-mod-http-headers-more nginx-mod-http-lua
+    apk --no-cache add nginx nginx-mod-http-headers-more
 
 # Ensure www-data user exists
 # 82 is the standard uid/gid for "www-data" in Alpine
@@ -23,10 +23,11 @@ ADD ./defaults /media/defaults
 
 # Setup folders
 RUN mkdir -p /media/data && \
-	mkdir -p /media/data/logs && \
-	mkdir -p /media/data/sites-enabled && \
+    mkdir -p /media/data/logs && \
+    mkdir -p /media/data/sites-enabled && \
     mkdir -p /media/data/certs && \
-    mkdir -p /media/data/dhparams
+    mkdir -p /media/data/dhparams && \
+    chown -R www-data:www-data /media/data
 
 COPY entrypoint.sh /usr/local/bin/
 
