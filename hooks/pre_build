@@ -5,8 +5,12 @@ set -e
 L_SOURCE_BRANCH="${SOURCE_BRANCH}"
 L_GIT_SHA1="${GIT_SHA1}"
 L_VERSION=line=$(head -n 1 ./CHANGELOG)
+L_MINORVERSION=${L_VERSION%.*}
 
 echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1)"
+
+echo "L_VERSION = $L_VERSION"
+echo "L_MINORVERSION = $L_MINORVERSION"
 
 if [ "$L_SOURCE_BRANCH" = "master" ]; then
   echo "Oh we are building master..."
