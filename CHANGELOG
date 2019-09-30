@@ -1,3 +1,6 @@
+0.2.1-Beta
+ - Reorder Dockerfile
+ 
 0.2.0-Beta
  - Added tls config (tls1.2 and tls1.3)
  
