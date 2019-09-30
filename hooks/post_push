@@ -9,7 +9,7 @@ L_VERSIONSUFFIX=$(echo $L_VERSION| cut -d '-' -f 2)
 L_MINORVERSION="${L_VERSION%.*}-${L_VERSIONSUFFIX}"
 
 if [ "$L_SOURCE_BRANCH" = "master" ]; then
-  git tag "$L_VERSION"
+  git tag "$L_VERSION" "$L_GIT_SHA1"
   git push origin --tags
   
   docker tag $IMAGE_NAME ${DOCKER_REPO}:${L_VERSION}
