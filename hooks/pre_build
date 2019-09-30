@@ -2,13 +2,9 @@
 
 set -e
 
-ls -l
-
-ls -l ../
-
 L_SOURCE_BRANCH="${SOURCE_BRANCH}"
 L_GIT_SHA1="${GIT_SHA1}"
-L_VERSION=line=$(head -n 1 ../CHANGELOG)
+L_VERSION=line=$(head -n 1 ./CHANGELOG)
 
 echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1)"
 
