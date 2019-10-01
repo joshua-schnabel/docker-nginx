@@ -1,3 +1,6 @@
+0.2.2-Beta
+ - Fix nginx.conf (remove lua)
+
 0.2.1-Beta
  - Reorder Dockerfile
  
