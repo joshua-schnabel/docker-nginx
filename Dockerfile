@@ -23,10 +23,10 @@ ADD ./defaults /media/defaults
 
 # Setup folders
 RUN mkdir -p /media/data && \
-    mkdir -p /media/data/logs && \
-    mkdir -p /media/data/sites-enabled && \
     mkdir -p /media/data/certs && \
     mkdir -p /media/data/dhparams && \
+    mkdir -p /media/data/logs && \    
+    mkdir -p /media/data/sites-enabled && \
     chown -R www-data:www-data /media/data
 
 COPY entrypoint.sh /usr/local/bin/
