@@ -204,7 +204,7 @@ services:
    nginx:
      image: jschnabel/nginx
      container_name: nginx
-	 environment:
+     environment:
        - DISABLETLS="false"
      ports:
        - 80:80
