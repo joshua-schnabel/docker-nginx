@@ -20,7 +20,7 @@ A secure TLS protected server is started without having to change the configurat
 
 ![SSL Labs rating](https://raw.githubusercontent.com/joshua-schnabel/docker-nginx/master/doc/image/ssllabs.png) (_Only with custom TLS certificate_)
 
-## :package:Setup
+## Setup
 
 The easiest way to start the server is the following command.
 
