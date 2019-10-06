@@ -2,7 +2,6 @@ FROM alpine:3.10
 LABEL Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
       Description="Lightweight container with Nginx."
 	  
-ENV IMAGE_VERSION="0.1.0-Beta"
 ENV DISABLETLS="false"
 
 # Update packages and install packages 
@@ -17,6 +16,7 @@ RUN set -x ; \
     addgroup -g 82 -S www-data ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
 
+ADD ./CHANGELOG /CHANGELOG
 ADD ./nginx.conf /etc/nginx/nginx.conf
 ADD ./openssl.conf /etc/nginx/openssl.conf
 ADD ./data /media/data

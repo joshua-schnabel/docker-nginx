@@ -1,6 +1,7 @@
 1.0.0
  - Fixed config
  - added documentation
+ - Added logrotate
 
 0.2.2-Beta
  - Fix nginx.conf (remove lua)
