@@ -1,4 +1,4 @@
-# ![](https://github.githubassets.com/images/icons/emoji/unicode/1f680.png "") jschnabel/docker-nginx ![](https://github.githubassets.com/images/icons/emoji/unicode/1f680.png "")
+# jschnabel/docker-nginx
 
  ___A lightweight, pre-configured nginx container with HTTP 2.0, TLS1.3 and SSL Labs A rating___
 
@@ -8,11 +8,11 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/jschnabel/nginx "Docker Pulls")](https://hub.docker.com/r/jschnabel/nginx) 
 [![License](https://img.shields.io/github/license/joshua-schnabel/docker-nginx "License")](https://github.com/joshua-schnabel/docker-nginx/blob/master/LICENSE) 
 
-##  :question:What is nginx?
+## What is nginx?
 
 > Nginx is a web server which can also be used as a reverse proxy, load balancer, mail proxy and HTTP cache. (_Wikipedia_)
 
-## :exclamation:Why would you use this image?
+## Why would you use this image?
 
 With this image you get a preconfigured nginx image. This image provides support for TLS 1.3 and HTTP 2.0. 
 
@@ -20,7 +20,7 @@ A secure TLS protected server is started without having to change the configurat
 
 ![SSL Labs rating](https://raw.githubusercontent.com/joshua-schnabel/docker-nginx/master/doc/image/ssllabs.png) (_Only with custom TLS certificate_)
 
-## :package:Setup
+## Setup
 
 The easiest way to start the server is the following command.
 
@@ -151,7 +151,7 @@ server {
 
 ```
 
-## :bomb:Stuff
+## Stuff
 
 In this chapter further settings are described.
 
