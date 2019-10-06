@@ -8,7 +8,8 @@ ENV DISABLETLS="false"
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl && \
-    apk --no-cache add nginx nginx-mod-http-headers-more
+    apk --no-cache add nginx nginx-mod-http-headers-more nginx-mod-http-lua && \
+	apk --no-cache add logrotate
 
 # Ensure www-data user exists
 # 82 is the standard uid/gid for "www-data" in Alpine
@@ -20,6 +21,7 @@ ADD ./nginx.conf /etc/nginx/nginx.conf
 ADD ./openssl.conf /etc/nginx/openssl.conf
 ADD ./data /media/data
 ADD ./defaults /media/defaults
+ADD ./logrotate.conf /etc/logrotate.d/nginx
 
 # Setup folders
 RUN mkdir -p /media/data && \

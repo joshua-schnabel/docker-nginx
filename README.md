@@ -1,4 +1,4 @@
-# :rocket: jschnabel/docker-nginx :rocket:
+# ![](https://github.githubassets.com/images/icons/emoji/unicode/1f680.png "") jschnabel/docker-nginx ![](https://github.githubassets.com/images/icons/emoji/unicode/1f680.png "")
 
  ___A lightweight, pre-configured nginx container with HTTP 2.0, TLS1.3 and SSL Labs A rating___
 
