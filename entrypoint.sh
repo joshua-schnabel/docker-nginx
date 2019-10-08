@@ -41,6 +41,8 @@ fi
 
 touch /media/data/logs/access.log
 touch /media/data/logs/error.log
+touch /media/data/logs/access.1.log
+touch /media/data/logs/error.1.log
 
 echo "Starting container version ${containerv} with nginx version ${nginxlocal}..."
 echo "Run $@"
