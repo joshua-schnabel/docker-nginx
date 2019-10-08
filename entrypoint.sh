@@ -39,6 +39,9 @@ if [ ! -f "$L_CERTFILE" ] && [ "$DISABLETLS" = "false" ]; then
 	openssl req -x509 -newkey rsa:4096 -out "$L_CERTFILE" -keyout "$L_KEYFILE" -days 365 -nodes -subj '/CN=localhost'
 fi
 
+touch /media/data/logs/access.log
+touch /media/data/logs/error.log
+
 echo "Starting container version ${containerv} with nginx version ${nginxlocal}..."
 echo "Run $@"
 
