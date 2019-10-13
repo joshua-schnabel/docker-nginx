@@ -47,4 +47,6 @@ touch /media/data/logs/error.1.log
 echo "Starting container version ${containerv} with nginx version ${nginxlocal}..."
 echo "Run $@"
 
+/usr/sbin/crond -b -l 8
+
 exec env OPENSSL_CONF=/etc/nginx/openssl.conf "$@" 2>&1

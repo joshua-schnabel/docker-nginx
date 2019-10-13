@@ -8,7 +8,8 @@ ENV DISABLETLS="false"
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
     apk --no-cache add nginx nginx-mod-http-headers-more && \
-	apk --no-cache add logrotate
+	apk --no-cache add logrotate && \
+	rm -rf /var/cache/apk/*
 
 # Ensure www-data user exists
 # 82 is the standard uid/gid for "www-data" in Alpine
