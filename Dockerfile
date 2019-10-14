@@ -11,7 +11,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/joshua-schnabel/docker-nginx/" \
       org.label-schema.vendor="Joshua Schnabel" \
       org.label-schema.version=$VERSION \
-      org.label-schema.schema-version="1.0"
+      org.label-schema.schema-version="1.0" \
       Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
       Description="Lightweight Nginx container."
 	  
