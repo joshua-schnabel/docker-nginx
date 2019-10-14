@@ -1,0 +1,4 @@
+#!/bin/sh
+# docker build --build-arg TEST=$VAR -t $IMAGE_NAME .
+
+docker build -t $IMAGE_NAME .
