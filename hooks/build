@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+L_GIT_SHA1="${GIT_SHA1}"
+L_VERSION=$(head -n 1 ./CHANGELOG)
+
+docker build --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+             --build-arg VCS_REF=${L_GIT_SHA1} \
+             --build-arg VERSION=${L_VERSION} \
+             -t $IMAGE_NAME .

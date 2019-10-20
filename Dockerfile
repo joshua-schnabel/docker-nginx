@@ -1,6 +1,19 @@
 FROM alpine:3.10
-LABEL Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
-      Description="Lightweight container with Nginx."
+
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+LABEL org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.name="jschnabel/nginx" \
+      org.label-schema.description="Lightweight Nginx container" \
+      org.label-schema.url="https://joshua-schnabel.de" \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url="https://github.com/joshua-schnabel/docker-nginx/" \
+      org.label-schema.vendor="Joshua Schnabel" \
+      org.label-schema.version=$VERSION \
+      org.label-schema.schema-version="1.0" \
+      Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
+      Description="Lightweight Nginx container."
 	  
 ENV DISABLETLS="false"
 

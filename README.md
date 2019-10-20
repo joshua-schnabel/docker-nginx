@@ -11,8 +11,11 @@
 [![Stars](https://img.shields.io/docker/stars/jschnabel/nginx "Stars")](https://hub.docker.com/r/jschnabel/nginx) 
 [![Docker Build](https://img.shields.io/docker/cloud/automated/jschnabel/nginx "Docker Build")](https://hub.docker.com/r/jschnabel/nginx) 
 [![Docker Build](https://img.shields.io/docker/cloud/build/jschnabel/nginx "Docker Build")](https://hub.docker.com/r/jschnabel/nginx) 
+[![](https://images.microbadger.com/badges/version/jschnabel/nginx.svg)](https://microbadger.com/images/jschnabel/nginx "Get your own version badge on microbadger.com")
+[![](https://images.microbadger.com/badges/image/jschnabel/nginx.svg)](https://microbadger.com/images/jschnabel/nginx "Get your own image badge on microbadger.com")
 [![Docker Pulls](https://img.shields.io/docker/pulls/jschnabel/nginx "Docker Pulls")](https://hub.docker.com/r/jschnabel/nginx) 
 [![License](https://img.shields.io/github/license/joshua-schnabel/docker-nginx "License")](https://github.com/joshua-schnabel/docker-nginx/blob/master/LICENSE) 
+
 
 ## What is nginx?
 
