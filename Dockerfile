@@ -17,12 +17,10 @@ RUN set -x ; \
     addgroup -g 82 -S www-data ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
 
-ADD ./CHANGELOG /CHANGELOG
-ADD ./nginx.conf /etc/nginx/nginx.conf
-ADD ./openssl.conf /etc/nginx/openssl.conf
-ADD ./data /media/data
-ADD ./defaults /media/defaults
-ADD ./logrotate.conf /etc/logrotate.d/nginx
+COPY ./CHANGELOG /CHANGELOG
+COPY ./nginx.conf ./openssl.conf /etc/nginx/
+COPY ./data ./defaults /media/
+COPY ./logrotate.conf /etc/logrotate.d/nginx
 
 # Setup folders
 RUN mkdir -p /media/data && \
@@ -37,11 +35,7 @@ COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-VOLUME /media/data/logs
-VOLUME /media/data/certs
-VOLUME /media/data/dhparams
-VOLUME /media/data/webroot
-VOLUME /media/data/sites-enabled
+VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled"]
 
 HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 

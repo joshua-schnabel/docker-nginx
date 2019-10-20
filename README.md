@@ -1,6 +1,12 @@
 # jschnabel/docker-nginx
 
  ___A lightweight, pre-configured nginx container with HTTP 2.0, TLS1.3 and SSL Labs A rating___
+ 
+ * Built on the lightweight and secure Alpine Linux distribution
+ * Very small Docker image size (+/- 8MB)
+ * Optimized for rapid delivery of static content and proxied content from downstream web applications.
+ * Secure configuration with pre-configured, optimized TLS settings
+ * Pre-defined DSGVO-compliant log rotation settings with 7-day retention of access logs.
 
 [![Stars](https://img.shields.io/docker/stars/jschnabel/nginx "Stars")](https://hub.docker.com/r/jschnabel/nginx) 
 [![Docker Build](https://img.shields.io/docker/cloud/automated/jschnabel/nginx "Docker Build")](https://hub.docker.com/r/jschnabel/nginx) 
@@ -148,8 +154,11 @@ server {
 		root   /media/data/webroot/<your.domain>;
 	}
 }
-
 ```
+
+### Log files
+
+The log files (error and access log) are stored under `/media/data/logs` by default. This directory can be mounted for external processing of the log files.
 
 ## Stuff
 
