@@ -31,8 +31,8 @@ RUN set -x ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
 
 COPY ./CHANGELOG /CHANGELOG
-COPY ./nginx.conf ./openssl.conf /etc/nginx/
-COPY ./data ./defaults /media/
+COPY ./nginx /etc/nginx/
+COPY ./media /media/
 COPY ./logrotate.conf /etc/logrotate.d/nginx
 
 # Setup folders
