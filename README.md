@@ -18,6 +18,7 @@ Development Version: [![](https://img.shields.io/badge/Version-dev-blue?label=ve
 [![](https://img.shields.io/docker/pulls/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
 [![](https://img.shields.io/github/license/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/blob/master/LICENSE) 
 [![](https://img.shields.io/github/issues/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/issues)
+![](https://img.shields.io/badge/base--image-alpine-blue)
 
 
 ## What is nginx?
