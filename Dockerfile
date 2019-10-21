@@ -42,7 +42,7 @@ RUN mkdir -p /media/data && \
     mkdir -p /media/data/logs && \    
     mkdir -p /media/data/sites-enabled && \
     chown -R www-data:www-data /media/data && \
-	touch /var/log/messages
+    touch /var/log/messages
 
 COPY entrypoint.sh /usr/local/bin/
 
