@@ -2,19 +2,22 @@
 
  ___A lightweight, pre-configured nginx container with HTTP 2.0, TLS1.3 and SSL Labs A rating___
  
+Current Version: [![](https://img.shields.io/github/v/tag/joshua-schnabel/docker-nginx?label=version&logo=docker&logoColor=white "Version")](https://hub.docker.com/r/jschnabel/nginx/tags) ![](https://images.microbadger.com/badges/commit/jschnabel/nginx:latest.svg) [![](https://img.shields.io/microbadger/layers/jschnabel/nginx?logo=docker&logoColor=white) ![](https://img.shields.io/badge/image%20size-8MB-blue?logo=docker&logoColor=white)](https://microbadger.com/images/jschnabel/nginx) ![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/master?label=last%20change&logo=github&logoColor=white)
+ 
+Development Version: [![](https://img.shields.io/badge/Version-dev-blue?label=version&logo=docker&logoColor=white&color=yellow "Version")](https://hub.docker.com/r/jschnabel/nginx/tags) ![](https://images.microbadger.com/badges/commit/jschnabel/nginx:dev.svg) [![](https://img.shields.io/microbadger/layers/jschnabel/nginx/dev?logo=docker&logoColor=white) ![](https://img.shields.io/badge/image%20size-8MB-blue?logo=docker&logoColor=white)](https://microbadger.com/images/jschnabel/nginx:dev) ![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/dev?label=last%20change&logo=github&logoColor=white)
+
  * Built on the lightweight and secure Alpine Linux distribution
  * Very small Docker image size (+/- 8MB)
  * Optimized for rapid delivery of static content and proxied content from downstream web applications.
  * Secure configuration with pre-configured, optimized TLS settings
  * Pre-defined DSGVO-compliant log rotation settings with 7-day retention of access logs.
 
-[![Stars](https://img.shields.io/docker/stars/jschnabel/nginx "Stars")](https://hub.docker.com/r/jschnabel/nginx) 
-[![Docker Build](https://img.shields.io/docker/cloud/automated/jschnabel/nginx "Docker Build")](https://hub.docker.com/r/jschnabel/nginx) 
-[![Docker Build](https://img.shields.io/docker/cloud/build/jschnabel/nginx "Docker Build")](https://hub.docker.com/r/jschnabel/nginx) 
-[![](https://images.microbadger.com/badges/version/jschnabel/nginx.svg)](https://microbadger.com/images/jschnabel/nginx "Get your own version badge on microbadger.com")
-[![](https://images.microbadger.com/badges/image/jschnabel/nginx.svg)](https://microbadger.com/images/jschnabel/nginx "Get your own image badge on microbadger.com")
-[![Docker Pulls](https://img.shields.io/docker/pulls/jschnabel/nginx "Docker Pulls")](https://hub.docker.com/r/jschnabel/nginx) 
-[![License](https://img.shields.io/github/license/joshua-schnabel/docker-nginx "License")](https://github.com/joshua-schnabel/docker-nginx/blob/master/LICENSE) 
+[![](https://img.shields.io/docker/stars/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
+[![](https://img.shields.io/docker/cloud/automated/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
+[![](https://img.shields.io/docker/cloud/build/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
+[![](https://img.shields.io/docker/pulls/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
+[![](https://img.shields.io/github/license/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/blob/master/LICENSE) 
+[![](https://img.shields.io/github/issues/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/issues)
 
 
 ## What is nginx?
