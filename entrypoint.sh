@@ -11,6 +11,7 @@ L_KEYFILE="/media/data/certs/default_key.pem"
 # https://stackoverflow.com/questions/50729099/bash-nginx-version-check-cut
 ###
 command="nginx -v"
+containerv=$(head -n 1 /CHANGELOG)
 nginxv=$( ${command} 2>&1 )
 nginxlocal=$(echo $nginxv | grep -o '[0-9.]*$')
 ### Get nginx version
@@ -38,7 +39,14 @@ if [ ! -f "$L_CERTFILE" ] && [ "$DISABLETLS" = "false" ]; then
 	openssl req -x509 -newkey rsa:4096 -out "$L_CERTFILE" -keyout "$L_KEYFILE" -days 365 -nodes -subj '/CN=localhost'
 fi
 
-echo "Starting container version $IMAGE_VERSION with nginx version ${nginxlocal}..."
+touch /media/data/logs/access.log
+touch /media/data/logs/error.log
+touch /media/data/logs/access.1.log
+touch /media/data/logs/error.1.log
+
+echo "Starting container version ${containerv} with nginx version ${nginxlocal}..."
 echo "Run $@"
+
+/usr/sbin/crond -b -l 8
 
 exec env OPENSSL_CONF=/etc/nginx/openssl.conf "$@" 2>&1
