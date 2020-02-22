@@ -1,3 +1,6 @@
+1.0.1
+ - Fix request rate
+
 1.0.0
  - Fixed config
  - added documentation
