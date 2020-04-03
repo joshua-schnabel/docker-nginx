@@ -5,17 +5,27 @@ set -e
 L_SOURCE_BRANCH="${SOURCE_BRANCH}"
 L_GIT_SHA1="${GIT_SHA1}"
 L_VERSION=$(head -n 1 ./CHANGELOG)
-L_VERSIONSUFFIX=$(echo $L_VERSION| cut -d '-' -f 2)
-L_MINORVERSION="${L_VERSION%.*}-${L_VERSIONSUFFIX}"
+L_VERSIONSUFFIX=""
 
 echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1)"
 
-SOFTVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/edge/main/x86_64/nginx 2>&1 | grep -oP '(?<=<a class="hint--right text-danger" aria-label="Flagged: .{19}" href="#">)[^<]*')
+if [[ $L_VERSION == *"-"* ]]; then
+        L_VERSIONSUFFIX="-$(echo $L_VERSION| cut -d '-' -f 2)"
+fi
+L_MINORVERSION="${L_VERSION%.*}${L_VERSIONSUFFIX}"
 
-echo "SOFTVERSION = $SOFTVERSION"
+L_INTVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/edge/main/x86_64/nginx 2>&1 | grep -oP '(?<=<a class="hint--right text-danger" aria-label="Flagged: .{19}" href="#">)[^<]*')
+L_INTVERSIONSUFFIX=""
+
+if [[ $L_INTVERSION == *"-"* ]]; then
+        L_INTVERSIONSUFFIX="-$(echo $L_VERSION| cut -d '-' -f 2)"
+fi
+L_INTMINORVERSION="${L_VERSION%.*}"
+
+echo "Internal Version is $L_INTVERSION and $L_INTMINORVERSION"
 
 if [ "$L_SOURCE_BRANCH" = "master" ]; then
-  echo "Oh we are building master..."
+  echo "Oh we are building master, how nice..."
   echo "This version $L_VERSION is Part of series $L_MINORVERSION"
   if git rev-parse "version-$L_VERSION" >/dev/null 2>&1; then
     echo "Version $L_VERSION already exists";
