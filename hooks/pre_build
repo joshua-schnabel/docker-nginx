@@ -14,7 +14,7 @@ if [[ $L_VERSION == *"-"* ]]; then
 fi
 L_MINORVERSION="${L_VERSION%.*}${L_VERSIONSUFFIX}"
 
-L_INTVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/v3.11/main/x86_64/nginx 2>&1 | grep -oP '(?<=<a class="hint--right text-danger" aria-label="Flagged: .{19}" href="#">)[^<]*')
+L_INTVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/v3.11/main/x86_64/nginx 2>&1 | grep -oh  "[[:digit:]]\.[[:digit:]]\{1,2\}\.[[:digit:]]\{1,2\}-r[0-9]\{1,2\}")
 L_INTVERSIONSUFFIX=""
 
 if [[ $L_INTVERSION == *"-"* ]]; then
