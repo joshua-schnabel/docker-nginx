@@ -10,7 +10,7 @@ L_MINORVERSION="${L_VERSION%.*}-${L_VERSIONSUFFIX}"
 
 echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1)"
 
-SOFTVERSION=´wget -O - -o /dev/null https://pkgs.alpinelinux.org/package/edge/main/x86_64/nginx | grep -oP '(?<=<a class="hint--right text-danger" aria-label="Flagged: .{19}" href="#">)[^<]*' | cat´
+SOFTVERSION=´wget https://pkgs.alpinelinux.org/package/edge/main/x86_64/nginx -O - | grep -oP '(?<=<a class="hint--right text-danger" aria-label="Flagged: .{19}" href="#">)[^<]*' | cat´
 
 echo "SOFTVERSION = $SOFTVERSION"
 
