@@ -3,6 +3,7 @@ FROM alpine:3.10
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
+ARG INTVERSION
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.name="jschnabel/nginx" \
       org.label-schema.description="Lightweight Nginx container" \
@@ -20,7 +21,7 @@ ENV DISABLETLS="false"
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
-    apk --no-cache add nginx nginx-mod-http-headers-more && \
+    apk --no-cache add "nginx=$INTVERSION" "nginx-mod-http-headers-more=$INTVERSION" && \
 	apk --no-cache add logrotate && \
 	rm -rf /var/cache/apk/*
 
