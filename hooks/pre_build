@@ -7,7 +7,7 @@ L_GIT_SHA1="${GIT_SHA1}"
 L_VERSION=$(head -n 1 ./CHANGELOG)
 L_VERSIONSUFFIX=""
 
-echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1)"
+echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1), how lovely..."
 
 if [[ $L_VERSION == *"-"* ]]; then
         L_VERSIONSUFFIX="-$(echo $L_VERSION| cut -d '-' -f 2)"
@@ -22,7 +22,9 @@ if [[ $L_INTVERSION == *"-"* ]]; then
 fi
 L_INTMINORVERSION="${L_INTVERSION%.*}"
 
-echo "Internal Version is $L_INTVERSION and $L_INTMINORVERSION"
+L_GITTAG="version-$L_INTVERSION-L_VERSION"
+
+echo "Tags: $L_INTVERSION-L_VERSION $L_INTVERSION $L_VERSION $L_INTMINORVERSION-L_VERSION L_INTMINORVERSION $L_INTMINORVERSION-$L_MINORVERSION "
 
 if [ "$L_SOURCE_BRANCH" = "master" ]; then
   echo "Oh we are building master, how nice..."
