@@ -12,7 +12,7 @@ compgen -c
 
 echo "Building Branch $L_SOURCE_BRANCH ($L_GIT_SHA1)"
 
-SOFTVERSION=$(wget https://pkgs.alpinelinux.org/package/edge/main/x86_64/nginx -O - | grep -oP '(?<=<a class="hint--right text-danger" aria-label="Flagged: .{19}" href="#">)[^<]*')
+SOFTVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/edge/main/x86_64/nginx 2>&1 | grep -oP '(?<=<a class="hint--right text-danger" aria-label="Flagged: .{19}" href="#">)[^<]*')
 
 echo "SOFTVERSION = $SOFTVERSION"
 
