@@ -20,7 +20,7 @@ L_INTVERSIONSUFFIX=""
 if [[ $L_INTVERSION == *"-"* ]]; then
         L_INTVERSIONSUFFIX="-$(echo $L_VERSION| cut -d '-' -f 2)"
 fi
-L_INTMINORVERSION="${L_VERSION%.*}"
+L_INTMINORVERSION="${L_INTVERSION%.*}"
 
 echo "Internal Version is $L_INTVERSION and $L_INTMINORVERSION"
 
