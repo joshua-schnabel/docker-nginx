@@ -18,7 +18,7 @@ L_INTVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/edge/main/x86_64/ng
 L_INTVERSIONSUFFIX=""
 
 if [[ $L_INTVERSION == *"-"* ]]; then
-        L_INTVERSIONSUFFIX="-$(echo $L_VERSION| cut -d '-' -f 2)"
+        L_INTVERSIONSUFFIX="-$(echo $L_INTVERSION | cut -d '-' -f 2)"
 fi
 L_INTMINORVERSION="${L_INTVERSION%.*}"
 
