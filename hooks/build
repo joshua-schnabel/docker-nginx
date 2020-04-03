@@ -4,7 +4,10 @@ set -e
 L_GIT_SHA1="${GIT_SHA1}"
 L_VERSION=$(head -n 1 ./CHANGELOG)
 
+L_INTVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/edge/main/x86_64/nginx 2>&1 | grep -oP '(?<=<a class="hint--right text-danger" aria-label="Flagged: .{19}" href="#">)[^<]*')
+
 docker build --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
              --build-arg VCS_REF=${L_GIT_SHA1} \
              --build-arg VERSION=${L_VERSION} \
+             --build-arg INTVERSION=${L_INTVERSION} \
              -t $IMAGE_NAME .
