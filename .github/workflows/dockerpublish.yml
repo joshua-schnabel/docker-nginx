@@ -1,0 +1,26 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  IMAGE_NAME: image
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2.1.0
+      - name: Get Version
+        run: echo "Get Versions"
+
+  push:
+    needs: versions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image
+        run: echo "Build image"
