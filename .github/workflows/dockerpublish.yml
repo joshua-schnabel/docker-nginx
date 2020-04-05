@@ -17,6 +17,7 @@ jobs:
       - name: Get Version
         run: |
           export APK_NAME="release_$(date +'%Y-%m-%d')"
+          echo "::set-env name=APK_NAME::$APK_NAME"
           echo "APK_NAME=$APK_NAME"
 
   push:
