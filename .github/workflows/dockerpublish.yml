@@ -14,8 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2.1.0
-      - name: printenv
-        run: printenv
       - name: Get Version
         run: |
           T_VERSION=$(head -n 1 ./CHANGELOG); echo TEST=$TEST
@@ -30,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: printenv
+        run: printenv
       - name: Build image
         run: |
           echo "VERSION=${{ env.VERSION }}"
