@@ -19,7 +19,7 @@ jobs:
       - name: Get Version
         run: |
           compgen -c | sort
-          $TEMP=´(head -n 1 ./CHANGELOG)´
+          $TEMP=´head -n 1 ./CHANGELOG´
           echo "TEMP=$TEMP"
           echo "::set-env name=VERSION::$TEMP"
           echo "VERSION=${{ env.VERSION }}"
