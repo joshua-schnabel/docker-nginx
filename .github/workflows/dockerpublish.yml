@@ -18,8 +18,8 @@ jobs:
       - uses: actions/checkout@v2.1.0
       - name: Get Version
         run: |
-          echo "::set-env name=VERSION::$(head -n 1 ./CHANGELOG)"
-          echo "VERSION=${{ env.VERSION }}"
+          echo "::set-env name=VERSION2::$(head -n 1 ./CHANGELOG)"
+          echo "VERSION2=${{ env.VERSION2 }}"
 
   push:
     needs: versions
@@ -27,4 +27,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build image
-        run: echo "VERSION=${{ env.VERSION }}"
+        run: echo "VERSION2=${{ env.VERSION2 }}"
