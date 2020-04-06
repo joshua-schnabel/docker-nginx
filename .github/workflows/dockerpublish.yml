@@ -18,7 +18,6 @@ jobs:
         run: |
           TEST=$(head -n 1 ./CHANGELOG); echo TEST=$TEST
           echo TEST=$TEST
-          envman add --key VERSION --value "$TEST"
           echo "VERSION=${{ env.VERSION }}"
           echo "VERSION=$VERSION"
           echo "::set-env name=ABC::yellow"
