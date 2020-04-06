@@ -7,6 +7,7 @@ on:
 
 env:
   IMAGE_NAME: image
+  VERSION: foo
 
 jobs:
   versions:
@@ -18,7 +19,6 @@ jobs:
         run: |
           T_VERSION=$(head -n 1 ./CHANGELOG); echo TEST=$TEST
           echo "::set-env name=VERSION::$T_VERSION"
-          echo 'export VERSION2=$T_VERSION' >> $BASH_ENV
       - name: VERSION
         run: |
           echo "VERSION=${{ env.VERSION }}"
