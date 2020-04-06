@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v2.1.0
       - name: Get Version
         run: |
+          compgen -c
           $TEMP=´(head -n 1 ./CHANGELOG)´
           echo "TEMP=$TEMP"
           echo "::set-env name=VERSION::$TEMP"
