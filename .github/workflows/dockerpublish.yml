@@ -13,24 +13,30 @@ jobs:
   versions:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Project
       - uses: actions/checkout@v2.1.0
       - name: Get Version
         run: |
-          VERSION=$(head -n 1 ./CHANGELOG); echo VERSION=$VERSION
-          echo "::set-env name=VERSION::$VERSION"
-      - name: VERSION
-        run: |
-          echo "VERSION=${{ env.VERSION }}"
-          echo "VERSION=$VERSION" 
+          touch /tmp/versions
+          VERSION=$(head -n 1 ./CHANGELOG)
+          echo -e "VERSION=$VERSION" >> /tmp/versions
+      - name: Upload Version Artefact
+      - uses: actions/upload-artifact@v1
+        with:
+          name: versions
+          path: /tmp/versions
 
   push:
     needs: versions
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Project
       - uses: actions/checkout@v2
-      - name: printenv
-        run: printenv
-      - name: Build image
+      - name: Download Version Artefact
+      - uses: actions/download-artifact@v1
+        with:
+          name: versions
+          path: /tmp/versions
+      - name: Show Versions
         run: |
-          echo "VERSION=${{ env.VERSION }}"
-          echo "VERSION=$VERSION" 
+          cat /tmp/versions
