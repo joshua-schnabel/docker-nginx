@@ -39,7 +39,7 @@ jobs:
           path: /tmp/versions
       - name: Import Variables
         run: |
-          ./tmp/versions/env.sh
+          bash /tmp/versions/env.sh
           echo "VERSION: $VERSION"
       - name: Import Variables 2
         run: |
