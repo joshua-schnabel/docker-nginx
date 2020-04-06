@@ -16,8 +16,8 @@ jobs:
       - uses: actions/checkout@v2.1.0
       - name: Get Version
         run: |
-          T_VERSION=$(head -n 1 ./CHANGELOG); echo TEST=$TEST
-          echo "::set-env name=VERSION::$T_VERSION"
+          VERSION=$(head -n 1 ./CHANGELOG); echo VERSION=$VERSION
+          echo "::set-env name=VERSION::$VERSION"
       - name: VERSION
         run: |
           echo "VERSION=${{ env.VERSION }}"
