@@ -20,6 +20,7 @@ jobs:
         run: |
           TEST=$(head -n 1 ./CHANGELOG); echo TEST=$TEST
           echo TEST=$TEST
+          ls -l
           echo "::set-env name=VERSION2::$(head -n 1 ./CHANGELOG)"
           echo "VERSION2=${{ env.VERSION2 }}"
 
