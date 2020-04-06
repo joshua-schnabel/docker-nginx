@@ -17,9 +17,9 @@ jobs:
         uses: actions/checkout@v2.1.0
       - name: Get Version
         run: |
-          mkdir /tmp/versions && touch /tmp/versions/env && chmod +x /tmp/versions/env
+          mkdir /tmp/versions && touch /tmp/versions/env.sh && chmod +x /tmp/versions/env.sh
           VERSION=$(head -n 1 ./CHANGELOG)
-          echo -e "export VERSION=$VERSION\n" >> /tmp/versions/env
+          echo -e "echo \"::set-env name=VERSION::$VERSION\"\n" >> /tmp/versions/env.sh
       - name: Upload Version Artefact
         uses: actions/upload-artifact@v1
         with:
@@ -39,7 +39,7 @@ jobs:
           path: /tmp/versions
       - name: Import Variables
         run: |
-          source /tmp/versions/env
+          ./tmp/versions/env.sh
           echo "VERSION: $VERSION"
       - name: Import Variables 2
         run: |
