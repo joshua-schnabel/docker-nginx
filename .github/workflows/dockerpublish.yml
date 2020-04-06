@@ -12,7 +12,6 @@ env:
 jobs:
   versions:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2.1.0
       - name: Get Version
@@ -35,4 +34,3 @@ jobs:
         run: |
           echo "VERSION=${{ env.VERSION }}"
           echo "VERSION=$VERSION" 
-
