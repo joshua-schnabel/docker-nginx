@@ -18,6 +18,8 @@ jobs:
       - uses: actions/checkout@v2.1.0
       - name: Get Version
         run: |
+          TEST=foo; echo TEST=$TEST
+          echo TEST=$TEST
           echo "::set-env name=VERSION2::$(head -n 1 ./CHANGELOG)"
           echo "VERSION2=${{ env.VERSION2 }}"
 
