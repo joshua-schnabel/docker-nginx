@@ -21,6 +21,11 @@ jobs:
           envman add --key VERSION --value "$TEST"
           echo "VERSION=${{ env.VERSION }}"
           echo "VERSION=$VERSION"
+          echo "::set-env name=ABC::yellow"
+      - name: ABC
+        run: |
+          echo "ABC=${{ env.ABC }}"
+          echo "ABC=$ABC" 
 
   push:
     needs: versions
