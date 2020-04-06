@@ -7,8 +7,6 @@ on:
 
 env:
   IMAGE_NAME: image
-  VENDOR_VERSION: unknown
-  VERSION: unknown
 
 jobs:
   versions:
@@ -20,9 +18,9 @@ jobs:
         run: |
           TEST=$(head -n 1 ./CHANGELOG); echo TEST=$TEST
           echo TEST=$TEST
-          ls -l
-          echo "::set-env name=VERSION2::$(head -n 1 ./CHANGELOG)"
-          echo "VERSION2=${{ env.VERSION2 }}"
+          envman add --key VERSION --value "$TEST"
+          echo "VERSION=${{ env.VERSION }}"
+          echo "VERSION=$VERSION"
 
   push:
     needs: versions
@@ -30,4 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build image
-        run: echo "VERSION2=${{ env.VERSION2 }}"
+        run: |
+          echo "VERSION=${{ env.VERSION }}"
+          echo "VERSION=$VERSION"
+
