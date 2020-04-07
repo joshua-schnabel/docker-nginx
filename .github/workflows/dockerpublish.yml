@@ -35,9 +35,6 @@ jobs:
           echo -e "echo \"::set-env name=VENDORVERSION_PATCH::$VENDORVERSION_PATCH\"" >> /tmp/versions/env.sh
           echo -e "echo \"::set-env name=VENDORVERSION_MINOR::$VENDORVERSION_MINOR\"" >> /tmp/versions/env.sh
           echo -e "echo \"::set-env name=GITTAG::$GITTAG\"\n" >> /tmp/versions/env.sh
-          echo "-------------------------"
-          cat /tmp/versions/env.sh
-          echo "-------------------------"
       - name: Upload Version Artefact
         uses: actions/upload-artifact@v1
         with:
@@ -59,4 +56,4 @@ jobs:
         uses: actions/checkout@v2
       - name: Check if Build needed
         run: |
-          echo "VERSION: $VERSION"
+          exit 78
