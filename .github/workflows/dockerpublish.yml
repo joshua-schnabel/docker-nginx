@@ -56,7 +56,14 @@ jobs:
         uses: actions/checkout@v2
       - name: Check if Build needed
         run: |
-          exit 0
-      - name: Step after
+            if git rev-parse "${{ env.GITTAG }}" >/dev/null 2>&1; then
+              echo "::set-env name=RUN_BUILD::true"
+            fi
+      - name: Run Build
+        if: env.RUN_BUILD != "true"
         run: |
-          echo "yyyyyyyyyyyyyy"
+          echo "Tag ${{ env.GITTAG }} already exists. Exit..."
+      - name: Run Build
+        if: env.RUN_BUILD == "true"
+        run: |
+          echo "Run Build"
