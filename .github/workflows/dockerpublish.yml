@@ -26,14 +26,14 @@ jobs:
           VENDORVERSION_PATCH=${VENDORVERSION%-*}
           VENDORVERSION_MINOR=${VENDORVERSION_PATCH%.*}
           GITTAG="version-$VERSION-$VENDORVERSION"
-          echo -e "echo \"::set-env name=VERSION::$VERSION\"\n" >> /tmp/versions/env.sh
-          echo -e "echo \"::set-env name=VERSION_RELEASE::$VERSION_RELEASE\"\n" >> /tmp/versions/env.sh
-          echo -e "echo \"::set-env name=VERSION_PATCH::$VERSION_PATCH\"\n" >> /tmp/versions/env.sh
-          echo -e "echo \"::set-env name=VERSION_MINOR::$VERSION_MINOR\"\n" >> /tmp/versions/env.sh
-          echo -e "echo \"::set-env name=VENDORVERSION::$VENDORVERSION\"\n" >> /tmp/versions/env.sh
-          echo -e "echo \"::set-env name=VENDORVERSION_RELEASE::$VENDORVERSION_RELEASE\"\n" >> /tmp/versions/env.sh
-          echo -e "echo \"::set-env name=VENDORVERSION_PATCH::$VENDORVERSION_PATCH\"\n" >> /tmp/versions/env.sh
-          echo -e "echo \"::set-env name=VENDORVERSION_MINOR::$VENDORVERSION_MINOR\"\n" >> /tmp/versions/env.sh
+          echo -e "echo \"::set-env name=VERSION::$VERSION\"" >> /tmp/versions/env.sh
+          echo -e "echo \"::set-env name=VERSION_RELEASE::$VERSION_RELEASE\"" >> /tmp/versions/env.sh
+          echo -e "echo \"::set-env name=VERSION_PATCH::$VERSION_PATCH\"" >> /tmp/versions/env.sh
+          echo -e "echo \"::set-env name=VERSION_MINOR::$VERSION_MINOR\"" >> /tmp/versions/env.sh
+          echo -e "echo \"::set-env name=VENDORVERSION::$VENDORVERSION\"" >> /tmp/versions/env.sh
+          echo -e "echo \"::set-env name=VENDORVERSION_RELEASE::$VENDORVERSION_RELEASE\"" >> /tmp/versions/env.sh
+          echo -e "echo \"::set-env name=VENDORVERSION_PATCH::$VENDORVERSION_PATCH\"" >> /tmp/versions/env.sh
+          echo -e "echo \"::set-env name=VENDORVERSION_MINOR::$VENDORVERSION_MINOR\"" >> /tmp/versions/env.sh
           echo -e "echo \"::set-env name=GITTAG::$GITTAG\"\n" >> /tmp/versions/env.sh
           echo "-------------------------"
           cat /tmp/versions/env.sh
