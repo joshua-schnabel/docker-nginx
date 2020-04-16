@@ -60,10 +60,10 @@ jobs:
               echo "::set-env name=RUN_BUILD::'true'"
             fi
       - name: Run Build
-        if: ${{! env.RUN_BUILD}}
+        if: ${{ ! env.RUN_BUILD }}
         run: |
           echo "Tag ${{ env.GITTAG }} already exists. Exit..."
       - name: Run Build
-        if: ${{! env.RUN_BUILD}}
+        if: ${{ env.RUN_BUILD }}
         run: |
           echo "Run Build"
