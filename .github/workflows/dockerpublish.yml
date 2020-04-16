@@ -57,13 +57,13 @@ jobs:
       - name: Check if Build needed
         run: |
             if git rev-parse "${{ env.GITTAG }}" >/dev/null 2>&1; then
-              echo "::set-env name=RUN_BUILD::true"
+              echo "::set-env name=RUN_BUILD::'true'"
             fi
       - name: Run Build
-        if: env.RUN_BUILD != "true"
+        if: ! env.RUN_BUILD
         run: |
           echo "Tag ${{ env.GITTAG }} already exists. Exit..."
       - name: Run Build
-        if: env.RUN_BUILD == "true"
+        if: env.RUN_BUILD
         run: |
           echo "Run Build"
