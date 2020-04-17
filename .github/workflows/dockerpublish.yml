@@ -68,6 +68,6 @@ jobs:
         run: |
           echo "Run Build Step 1"
       - name: Run Build 2
-        if: success()
+        if: ${{ ! cancelled() }}
         run: |
           echo "Run Build Step 2"
