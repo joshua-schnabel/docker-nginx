@@ -59,11 +59,15 @@ jobs:
             if git rev-parse "${{ env.GITTAG }}" >/dev/null 2>&1; then
               echo "::set-env name=RUN_BUILD::'true'"
             fi
-      - name: Run Build
+      - name: Exit Build
         if: ${{ ! env.RUN_BUILD }}
         run: |
           echo "Tag ${{ env.GITTAG }} already exists. Exit..."
       - name: Run Build
         if: ${{ env.RUN_BUILD }}
         run: |
-          echo "Run Build"
+          echo "Run Build Step 1"
+      - name: Run Build 2
+        if: ssuccess()
+        run: |
+          echo "Run Build Step 2"
