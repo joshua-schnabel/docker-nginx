@@ -70,4 +70,7 @@ jobs:
       - name: Run Build 2
         if: ${{ ! cancelled() }}
         run: |
-          echo "Run Build Step 2"
+          echo "cancelled ${{ cancelled() }}"
+          echo "success ${{ success() }}"
+          echo "failure ${{ failure() }}"
+
