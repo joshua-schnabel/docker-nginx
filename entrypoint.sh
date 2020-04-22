@@ -18,15 +18,13 @@ nginxlocal=$(echo $nginxv | grep -o '[0-9.]*$')
 
 echo "Check if $L_SITESENABLED_DIR is empty"
 
-if [ -z "$(ls -A $L_SITESENABLED_DIR)" ]; then
+if [ -z "$(ls -A $L_SITESENABLED_DIR)" ] || [ -f "$L_SITESENABLED_DIRdefault.conf" ]; then
     echo "Copy default config to $L_SITESENABLED_DIR"
 	cp -a /media/defaults/sites-enabled/. "$L_SITESENABLED_DIR"
 	if [ "$DISABLETLS" = "false" ]; then
 		echo "Copy default tls config to $L_SITESENABLED_DIR"
 		cp -a /media/defaults/sites-enabled-ssl/. "$L_SITESENABLED_DIR"
-	fi
-else
-    echo "Keep config in $L_SITESENABLED_DIR"
+	fi 
 fi
 
 if [ ! -f "$L_DHFILE" ] && [ "$DISABLETLS" = "false" ]; then
