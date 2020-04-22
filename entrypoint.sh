@@ -2,6 +2,7 @@
 set -Eeo pipefail
 
 L_SITESENABLED_DIR="/media/data/sites-enabled/"
+L_SITESENABLED_DEFAULT="/media/data/sites-enabled/default.conf"
 L_DISABLETLS="${DISABLETLS:-true}"
 L_DHFILE="/media/data/dhparams/dhparam4096.dh"
 L_CERTFILE="/media/data/certs/default_cert.pem"
@@ -16,9 +17,9 @@ nginxv=$( ${command} 2>&1 )
 nginxlocal=$(echo $nginxv | grep -o '[0-9.]*$')
 ### Get nginx version
 
-echo "Check if $L_SITESENABLED_DIR is empty"
+echo "Check if $L_SITESENABLED_DIR is empty or if $L_SITESENABLED_DEFAULT exists"
 
-if [ -z "$(ls -A $L_SITESENABLED_DIR)" ] || [ -f "$L_SITESENABLED_DIRdefault.conf" ]; then
+if [ -z "$(ls -A $L_SITESENABLED_DIR)" ] || [ -f "$L_SITESENABLED_DEFAULT" ]; then
     echo "Copy default config to $L_SITESENABLED_DIR"
 	cp -a /media/defaults/sites-enabled/. "$L_SITESENABLED_DIR"
 	if [ "$DISABLETLS" = "false" ]; then
