@@ -21,10 +21,10 @@ echo "Check if $L_SITESENABLED_DIR is empty or if $L_SITESENABLED_DEFAULT exists
 
 if [ -z "$(ls -A $L_SITESENABLED_DIR)" ] || [ -f "$L_SITESENABLED_DEFAULT" ]; then
     echo "Copy default config to $L_SITESENABLED_DIR"
-	cp -a /media/defaults/sites-enabled/. "$L_SITESENABLED_DIR"
+	/bin/cp -rf /media/defaults/sites-enabled/. "$L_SITESENABLED_DIR"
 	if [ "$DISABLETLS" = "false" ]; then
 		echo "Copy default tls config to $L_SITESENABLED_DIR"
-		cp -a /media/defaults/sites-enabled-ssl/. "$L_SITESENABLED_DIR"
+		/bin/cp -rf /media/defaults/sites-enabled-ssl/. "$L_SITESENABLED_DIR"
 	fi 
 fi
 
