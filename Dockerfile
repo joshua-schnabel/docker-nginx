@@ -21,8 +21,7 @@ ENV DISABLETLS="false"
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
-    apk --no-cache add "nginx=$INTVERSION" "nginx-mod-http-headers-more=$INTVERSION" "nginx-mod-stream=$INTVERSION" \
-    	"nginx-mod-mail=$INTVERSION" "nginx-mod-mail=$INTVERSION" "nginx-mod-http-lua=$INTVERSION" && \
+    apk --no-cache add "nginx=$INTVERSION" "nginx-mod-http-headers-more=$INTVERSION" "nginx-mod-stream=$INTVERSION" "nginx-mod-mail=$INTVERSION" && \
 	apk --no-cache add logrotate && \
 	rm -rf /var/cache/apk/*
 
