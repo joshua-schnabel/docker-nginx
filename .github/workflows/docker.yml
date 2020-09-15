@@ -1,0 +1,112 @@
+name: docker
+
+env:
+  IMAGE_NAME: jschnabel/nginx
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+  schedule:
+    - cron: "0 4 * * SUN"
+jobs:
+  prepair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - id: genVersions
+        name: Generate Versions
+        uses: ./.github/actions/genVersions
+        - id: genVersions
+        name: Generate Versions
+        run: |
+          NGINXVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/v3.11/main/x86_64/nginx 2>&1 | grep -o -h -m 1 "[[:digit:]]\.[[:digit:]]\{1,2\}\.[[:digit:]]\{1,2\}-r[0-9]\{1,2\}")
+          echo "::set-env name=VENDORVERSION::$NGINXVERSION"
+      - id: genTags
+        name: Generate Tags
+        uses: ./.github/actions/genTags
+        with:
+          VERSION: $VERSION
+          VERSION_MINOR: $VERSION_MINOR
+          branch: $BRANCH
+          isWeekly: ${{ github.event_name == 'schedule' }}
+      - name: Generate Env File
+        uses: ./.github/actions/generateEnv
+        with:
+          variables: "VERSION,RELEASETYPE,VERSION_MINOR,TAGS,BRANCH,BUILD_DATE,GITHASH"
+      - name: Upload Env File
+        uses: actions/upload-artifact@v2
+        with:
+          name: env
+          path: /tmp/env
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "14"
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install Dependencies
+        run: npm install
+  docker:
+    needs: [prepair, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Download Env File
+        uses: actions/download-artifact@v2
+        with:
+          name: env
+          path: /tmp
+      - name: Load Env
+        uses: ./.github/actions/loadEnv
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          platforms: linux/amd64,linux/arm/v6
+          tags: ${{ env.TAGS }}
+          build-args: |
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            VCS_REF=${{ env.GITHASH }}
+            VERSION=${{ env.VERSION }}
+  github:
+    needs: [docker]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Download Env File
+        uses: actions/download-artifact@v2
+        with:
+          name: env
+          path: /tmp
+      - name: Load Env
+        uses: ./.github/actions/loadEnv
+      - name: Tag Version
+        run: |
+          git tag -a "v$VERSION $GITHASH" -m "New release for v$VERSION"
+          //git push --tags
+          git tag -n

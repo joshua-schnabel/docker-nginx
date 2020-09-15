@@ -21,8 +21,7 @@ ENV DISABLETLS="false"
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
-    apk --no-cache add "nginx=$INTVERSION" "nginx-mod-http-headers-more=$INTVERSION" "nginx-mod-stream=$INTVERSION" \
-    	"nginx-mod-mail=$INTVERSION" "nginx-mod-mail=$INTVERSION" "nginx-mod-http-lua=$INTVERSION" && \
+    apk --no-cache add "nginx=$INTVERSION" "nginx-mod-http-headers-more=$INTVERSION" "nginx-mod-stream=$INTVERSION" "nginx-mod-mail=$INTVERSION" && \
 	apk --no-cache add logrotate && \
 	rm -rf /var/cache/apk/*
 
@@ -43,6 +42,7 @@ RUN mkdir -p /media/data && \
     mkdir -p /media/data/dhparams && \
     mkdir -p /media/data/logs && \    
     mkdir -p /media/data/sites-enabled && \
+    mkdir -p /media/data/streams && \
     chown -R www-data:www-data /media/data && \
     touch /var/log/messages
 
@@ -50,7 +50,7 @@ COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled"]
+VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
 
 HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 

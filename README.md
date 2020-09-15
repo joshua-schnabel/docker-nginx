@@ -1,25 +1,33 @@
 # jschnabel/docker-nginx
 
+![](https://img.shields.io/badge/base--image-alpine-blue?logo=docker&logoColor=white)
+[![](https://img.shields.io/docker/stars/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
+[![](https://img.shields.io/badge/docker%20build-automated-blue?logo=docker&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/actions?query=workflow%3Adocker)
+[![](https://img.shields.io/docker/pulls/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
+[![](https://img.shields.io/github/license/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/blob/master/LICENSE) 
+[![](https://img.shields.io/github/issues/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/issues)
+
  ___A lightweight, pre-configured nginx container with HTTP 2.0, TLS1.3 and SSL Labs A rating___
  
-Current Version: [![](https://img.shields.io/github/v/tag/joshua-schnabel/docker-nginx?label=version&logo=docker&logoColor=white "Version")](https://hub.docker.com/r/jschnabel/nginx/tags) ![](https://images.microbadger.com/badges/commit/jschnabel/nginx:latest.svg) [![](https://img.shields.io/microbadger/layers/jschnabel/nginx?logo=docker&logoColor=white) ![](https://img.shields.io/badge/image%20size-8MB-blue?logo=docker&logoColor=white)](https://microbadger.com/images/jschnabel/nginx) ![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/master?label=last%20change&logo=github&logoColor=white)
- 
-Development Version: [![](https://img.shields.io/badge/Version-dev-blue?label=version&logo=docker&logoColor=white&color=yellow "Version")](https://hub.docker.com/r/jschnabel/nginx/tags) ![](https://images.microbadger.com/badges/commit/jschnabel/nginx:dev.svg) [![](https://img.shields.io/microbadger/layers/jschnabel/nginx/dev?logo=docker&logoColor=white) ![](https://img.shields.io/badge/image%20size-8MB-blue?logo=docker&logoColor=white)](https://microbadger.com/images/jschnabel/nginx:dev) ![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/dev?label=last%20change&logo=github&logoColor=white)
+Current Version: 
+[![](https://img.shields.io/docker/v/jschnabel/nginx/latest?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
+[![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest?logo=docker&logoColor=white)](https://microbadger.com/images/jschnabel/nginx) 
+[![](https://img.shields.io/github/workflow/status/joshua-schnabel/docker-nginx/docker/master?label=docker%20build&logo=docker&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/actions?query=branch%3Amaster+workflow%3Adocker)
+[![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/master?label=last%20change&logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/commits/master)
+
+
+Development Version: 
+[![](https://img.shields.io/docker/v/jschnabel/nginx/latest-dev?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
+[![](https://img.shields.io/docker/image-size/jschnabel/nginx/dev?logo=docker&logoColor=white)](https://microbadger.com/images/jschnabel/nginx) 
+[![](https://img.shields.io/github/workflow/status/joshua-schnabel/docker-nginx/docker/dev?label=docker%20build&logo=docker&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/actions?query=branch%3Adev+workflow%3Adocker)
+[![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/dev?label=last%20change&logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/commits/dev)
+
 
  * Built on the lightweight and secure Alpine Linux distribution
  * Very small Docker image size (+/- 8MB)
  * Optimized for rapid delivery of static content and proxied content from downstream web applications.
  * Secure configuration with pre-configured, optimized TLS settings
  * Pre-defined DSGVO-compliant log rotation settings with 7-day retention of access logs.
-
-[![](https://img.shields.io/docker/stars/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
-[![](https://img.shields.io/docker/cloud/automated/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
-[![](https://img.shields.io/docker/cloud/build/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
-[![](https://img.shields.io/docker/pulls/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
-[![](https://img.shields.io/github/license/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/blob/master/LICENSE) 
-[![](https://img.shields.io/github/issues/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/issues)
-![](https://img.shields.io/badge/base--image-alpine-blue)
-
 
 ## What is nginx?
 
@@ -125,10 +133,11 @@ services:
        - /media/docker/volumes/nginx/webroot:/media/data/webroot
        - /etc/letsencrypt/live/<your.domain>/fullchain.pem:/media/data/certs/default_cert.pem:ro
        - /etc/letsencrypt/live/<your.domain>/privkey.pem:/media/data/certs/default_key.pem:ro
-       - /media/docker/volumes/nginx/config:/media/data/sites-enabled
+       - /media/docker/volumes/nginx/sites:/media/data/sites-enabled
+       - /media/docker/volumes/nginx/streams:/media/data/streams
 ```
 
-A custom configuration could look like this.
+A custom site configuration could look like this. It should be mounted to `media/data/sites-enabled`.
 
 ```nginx
 server {
@@ -160,6 +169,32 @@ server {
 	location = /50x.html {
 		root   /media/data/webroot/<your.domain>;
 	}
+}
+```
+
+A custom stream configuration could look like this. It should be mounted to `media/data/streams`.
+
+```
+stream {
+    upstream mqtt {
+         server mosquitto:1883;
+    }
+
+    server {
+        listen                8883 ssl;
+        proxy_pass            mqtt;
+
+        ssl_certificate  /media/data/certs/default_cert.pem;
+        ssl_certificate_key /media/data/certs/default_key.pem;
+
+        include /media/data/snippets/tls_stream.conf;
+    }
+
+    server {
+        listen                1883;
+        proxy_pass            mqtt;
+    }
+
 }
 ```
 
