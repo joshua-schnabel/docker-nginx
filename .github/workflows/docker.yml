@@ -42,25 +42,8 @@ jobs:
         with:
           name: env
           path: /tmp/env
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v2-beta
-        with:
-          node-version: "14"
-      - uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Install Dependencies
-        run: npm install
   docker:
-    needs: [prepair, test]
+    needs: [prepair]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
