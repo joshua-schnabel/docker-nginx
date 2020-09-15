@@ -19,7 +19,7 @@ jobs:
       - id: genVersions
         name: Generate Versions
         uses: ./.github/actions/genVersions
-        - id: genVersions
+      - id: genVersions
         name: Generate Versions
         run: |
           NGINXVERSION=$(curl -vs https://pkgs.alpinelinux.org/package/v3.11/main/x86_64/nginx 2>&1 | grep -o -h -m 1 "[[:digit:]]\.[[:digit:]]\{1,2\}\.[[:digit:]]\{1,2\}-r[0-9]\{1,2\}")
