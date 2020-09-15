@@ -35,7 +35,7 @@ jobs:
       - name: Generate Env File
         uses: ./.github/actions/generateEnv
         with:
-          variables: "VERSION,RELEASETYPE,VERSION_MINOR,TAGS,BRANCH,BUILD_DATE,GITHASH"
+          variables: "VERSION,RELEASETYPE,VERSION_MINOR,TAGS,BRANCH,BUILD_DATE,GITHASH,VENDORVERSION"
       - name: Upload Env File
         uses: actions/upload-artifact@v2
         with:
@@ -91,6 +91,7 @@ jobs:
             BUILD_DATE=${{ env.BUILD_DATE }}
             VCS_REF=${{ env.GITHASH }}
             VERSION=${{ env.VERSION }}
+            INTVERSION=${{ env.VENDORVERSION }}            
   github:
     needs: [docker]
     runs-on: ubuntu-latest
