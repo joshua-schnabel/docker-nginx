@@ -93,7 +93,7 @@ jobs:
       - name: Load Env
         uses: ./.github/actions/loadEnv
       - name: Tag Version
-        run: |
-          git tag -a "v$VERSION" $GITHASH -m "New release for v$VERSION"
-          //git push --tags
-          git tag -n
+        uses: hole19/git-tag-action@master
+        env:
+          TAG: $VERSION
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
