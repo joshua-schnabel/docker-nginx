@@ -95,5 +95,5 @@ jobs:
       - name: Tag Version
         uses: hole19/git-tag-action@master
         env:
-          TAG: ${{ env.VERSION }}
+          TAG: "version-${{ env.VERSION }}""
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
