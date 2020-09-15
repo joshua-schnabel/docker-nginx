@@ -1,0 +1,16 @@
+name: 'Load Env File'
+description: 'Load Env File'
+runs:
+  using: "composite"
+  steps: 
+     - 
+      name: Generate Env File
+      id: generate_file
+      shell: bash
+      run: |
+        while read -r line; do
+            t_env=(`echo $line | tr '=' ' '`)
+            t_name=${t_env[0]}
+            t_value=${t_env[1]}
+            echo "::set-env name=$t_name::$t_value"
+        done < /tmp/env

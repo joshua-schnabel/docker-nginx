@@ -42,6 +42,7 @@ RUN mkdir -p /media/data && \
     mkdir -p /media/data/dhparams && \
     mkdir -p /media/data/logs && \    
     mkdir -p /media/data/sites-enabled && \
+    mkdir -p /media/data/streams && \
     chown -R www-data:www-data /media/data && \
     touch /var/log/messages
 
@@ -49,7 +50,7 @@ COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled"]
+VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
 
 HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 
