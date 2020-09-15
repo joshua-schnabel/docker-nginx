@@ -92,6 +92,6 @@ jobs:
         uses: ./.github/actions/loadEnv
       - name: Tag Version
         run: |
-          git tag -a "v$VERSION $GITHASH" -m "New release for v$VERSION"
+          git tag -a "v$VERSION" $GITHASH -m "New release for v$VERSION"
           //git push --tags
           git tag -n
