@@ -1,5 +1,7 @@
 1.0.3-Beta
-
+ - add TLS Strong snipped
+ - remove deamon error
+ 
 1.0.2
  - Switch to github workflow
  - update readme
