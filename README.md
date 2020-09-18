@@ -11,14 +11,14 @@
  
 Current Version: 
 [![](https://img.shields.io/docker/v/jschnabel/nginx/latest?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
-[![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest?logo=docker&logoColor=white)](https://microbadger.com/images/jschnabel/nginx) 
+[![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags) 
 [![](https://img.shields.io/github/workflow/status/joshua-schnabel/docker-nginx/docker/master?label=docker%20build&logo=docker&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/actions?query=branch%3Amaster+workflow%3Adocker)
 [![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/master?label=last%20change&logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/commits/master)
 
 
 Development Version: 
 [![](https://img.shields.io/docker/v/jschnabel/nginx/latest-dev?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
-[![](https://img.shields.io/docker/image-size/jschnabel/nginx/dev?logo=docker&logoColor=white)](https://microbadger.com/images/jschnabel/nginx) 
+[![](https://img.shields.io/docker/image-size/jschnabel/nginx/dev-latest?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags) 
 [![](https://img.shields.io/github/workflow/status/joshua-schnabel/docker-nginx/docker/dev?label=docker%20build&logo=docker&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/actions?query=branch%3Adev+workflow%3Adocker)
 [![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/dev?label=last%20change&logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/commits/dev)
 
