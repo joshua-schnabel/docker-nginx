@@ -50,6 +50,8 @@ COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+RUN chown -R www-data:www-data /var/lib/nginx/tmp
+
 VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
 
 HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
