@@ -1,3 +1,8 @@
+1.0.3
+ - add TLS Strong snipped
+ - remove deamon error
+ - rewrite Readme
+ 
 1.0.2
  - Switch to github workflow
  - update readme
