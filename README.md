@@ -39,7 +39,7 @@ With this image you get a preconfigured nginx image. This image provides support
 
 A secure TLS protected server is started without having to change the configuration. A self-signed certificate is created for this purpose. SSL Labs rates the configuration with an A.
 
-![SSL Labs rating](https://raw.githubusercontent.com/joshua-schnabel/docker-nginx/master/doc/image/ssllabs.png) (_Only with custom TLS certificate_)
+![SSL Labs rating](./doc/image/ssllabs.png)
 
 ## Setup
 
@@ -87,6 +87,38 @@ The configuration shown above will cause a warning window in all browsers. This 
 To get a free certificate from Let's Encrypt you have to do the following. First the certbot must be installed on the host. 
 Then a certificate can be created using the command below. Please make sure that a directory is mounted by the host as webroot.
 
+#### ACME.sh
+
+```bash
+acme.sh --issue -d <your.domain> --cert-file /media/docker/volumes/nginx/webroot/cert.pem --key-file /media/docker/volumes/nginx/webroot/key.pem --fullchain-file /media/docker/volumes/nginx/webroot/fullchain.pem --reloadcmd "docker restart nginx"
+```
+
+The program will create the following files.
+
+```
+/media/docker/volumes/nginx/webroot/cert.pem 
+/media/docker/volumes/nginx/webroot/key.pem
+/media/docker/volumes/nginx/webroot/fullchain.pem
+```
+
+Now the certificate and the private key have to be mounted. 
+
+```yml
+services:
+   nginx:
+     image: jschnabel/nginx
+     container_name: nginx
+     ports:
+       - 80:80
+       - 443:443	 
+     volumes:
+       - /media/docker/volumes/nginx/webroot:/media/data/webroot
+       - /etc/letsencrypt/live/<your.domain>/fullchain.pem:/media/data/certs/default_cert.pem:ro
+       - /etc/letsencrypt/live/<your.domain>/privkey.pem:/media/data/certs/default_key.pem:ro
+```
+
+#### Certbot
+
 ```bash
 certbot certonly --webroot --webroot-path /media/docker/volumes/nginx/webroot --rsa-key-size 4096 --renew-by-default -d <your.domain>
 ```
@@ -114,7 +146,6 @@ services:
        - /etc/letsencrypt/live/<your.domain>/privkey.pem:/media/data/certs/default_key.pem:ro
 ```
 
-And that was it. Now every browser should accept the connection without problems. 
 
 ### Custom Config
 
@@ -202,51 +233,78 @@ stream {
 
 The log files (error and access log) are stored under `/media/data/logs` by default. This directory can be mounted for external processing of the log files.
 
-## Stuff
+### How to get a better SSL Labs Grade
 
-In this chapter further settings are described.
+If you want a better grade at SSL Labs, the following things have to be done. 
 
-### How to gat a SSL Labs A+ rating?
+#### Key Exchange 100% 
 
-To get an A+ rating on SSL Labs two things have to be done:
+To get a 100% rating in the Key Exchange category it is necessary to use a 4096 bit RSA certificate or an ECDSA certificate with ECDSA P-384 or ECDSA P-521.
 
-1. Add a CAA entry to your DNS with the value `0 issue "letsencrypt.org"` (only if issued via letsencrypt, if not insert your CA)
-2. Add the following configuration
+With acme.sh you can create such a certificate with 4096 bit RSA if you add the following parameter to the command. 
+
+```bash
+acme.sh --issue --keylength 4096 ..."
+```
+
+To get an ECDSA P-384 certificate the command must be modified as follows. 
+
+```bash
+acme.sh --issue --ecc --keylength ec-384 ..."
+```
+
+Certbot currently does not support ECDSA certificates. However a 4096 bit RSA can be created. Therefore the key length has to be provided.
+
+```bash
+certbot certonly --rsa-key-size 4096 ...
+```
+
+![SSL Labs rating](./doc/image/ssllabs_cert.png)
+
+#### Cipher Strength 100%
+
+To get 100% in this discipline no cipher suites with 128bit are allowed in the list of cipher suites. A snippet is provided for this purpose. This snippet must be included as shown in the configuration below. 
+
+WARNING: This will prevent very old clients from accessing your website (e.g. Java <= 7 or Android <= 6). If you expect clients that fall into this category, I advise against using them.  
+
+A custom site configuration could look like this. It should be mounted to `media/data/sites-enabled`.
 
 ```nginx
 server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
-	server_name _; 
+	listen 80;
+	listen [::]:80;
+	server_name <your.domain>; 
 	
 	return 301 https://$host$request_uri;
 }
 
 server {
-	listen 443 ssl http2 default_server;
-	listen [::]:443 ssl http2 default_server;
-	server_name _;
+	listen 443 ssl http2;
+	listen [::]:443 ssl http2;
+	server_name <your.domain>; 
 	
-	ssl_certificate	 /media/data/certs/default_cert.pem;
-	ssl_certificate_key /media/data/certs/default_key.pem;
+	ssl_certificate	 /media/data/certs/<your.domain>.pem;
+	ssl_certificate_key /media/data/certs/<your.domain>.pem;
 
 	include /media/data/snippets/gzip.conf;
 	include /media/data/snippets/header.conf;
-	include /media/data/snippets/tls.conf;
+	include /media/data/snippets/tls_strong.conf;
 	
 	location / {
-		root   /media/data/webroot;
+		root   /media/data/webroot/<your.domain>;
 		index  index.html index.htm;
 	}
 
 	error_page   500 502 503 504  /50x.html;
 	location = /50x.html {
-		root   /media/data/webroot;
+		root   /media/data/webroot/<your.domain>;
 	}
 }
 ```
 
-### How to disable TLS?
+![SSL Labs rating](./doc/image/ssllabs_strong.png)
+
+## How to disable TLS?
 
 Simply add an environment variable named `DISABLETLS` to the container. The value must be `true`.
 
