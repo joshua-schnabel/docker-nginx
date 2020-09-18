@@ -50,7 +50,7 @@ COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN rm -rf /var/lib/nginx/*
+RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
 
 VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
 
