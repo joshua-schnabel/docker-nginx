@@ -25,9 +25,10 @@ jobs:
         run: |
           echo "test"
           NGINXVERSION=$(curl -vs "https://pkgs.alpinelinux.org/package/v$ALPINEVERSION/main/x86_64/nginx" 2>&1 | grep -o -h -m 1 "[[:digit:]]\.[[:digit:]]\{1,2\}\.[[:digit:]]\{1,2\}-r[0-9]\{1,2\}")
-          NGINXVERSION=${NGINXVERSION%-*}
+          NGINXVERSIONSHORT=${NGINXVERSION%-*}
           echo "NGINXVERSION=$NGINXVERSION"
           echo "::set-env name=VENDORVERSION::$NGINXVERSION"
+          echo "::set-env name=VENDORVERSIONSHORT::$NGINXVERSION"
       - id: genTags
         name: Generate Tags
         uses: ./.github/actions/genTags
@@ -36,7 +37,7 @@ jobs:
           VERSION_MINOR: $VERSION_MINOR
           branch: $BRANCH
           isWeekly: ${{ github.event_name == 'schedule' }}
-          vendorVersion: $VENDORVERSION
+          vendorVersion: $VENDORVERSIONSHORT
       - name: Generate Env File
         uses: ./.github/actions/generateEnv
         with:
