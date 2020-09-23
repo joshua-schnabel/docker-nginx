@@ -1,11 +1,11 @@
-ARG ALPINEVERSION=3.12
+ARG ALPINEVERSION="3.12"
 
 FROM alpine:$ALPINEVERSION
 
-ARG BUILD_DATE
-ARG VCS_REF
-ARG VERSION
-ARG VENDORVERSION
+ARG BUILD_DATE=""
+ARG VCS_REF=""
+ARG VERSION=""
+ARG VENDORVERSION=""
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.name="jschnabel/nginx" \
@@ -18,9 +18,9 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.schema-version="1.0" \
       Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
       Description="Lightweight Nginx container." \
-	  nginx-version=$VENDORVERSION \
-      alpine-version=$ALPINEVERSION \
-	  
+      nginx-version=$VENDORVERSION \
+      alpine-version=$ALPINEVERSION
+
 ENV DISABLETLS="false"
 
 RUN \
@@ -30,8 +30,8 @@ RUN \
   rm -rf /var/cache/apk/* && \
   cd /tmp && \
   wget https://nginx.org/download/nginx-${VENDORVERSION}.tar.gz && \
-  tar xzf nginx-${NGINX_VERSION}.tar.gz && \
-  cd /tmp/nginx-${NGINX_VERSION} && \
+  tar xzf nginx-${VENDORVERSION}.tar.gz && \
+  cd /tmp/nginx-${VENDORVERSION} && \
   ./configure \
     --prefix=/etc/nginx \
     --sbin-path=/usr/sbin/nginx \
@@ -100,7 +100,7 @@ COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
+#RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
 
 VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
 
