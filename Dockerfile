@@ -31,7 +31,7 @@ RUN \
   cd /tmp && \
   wget https://github.com/openresty/headers-more-nginx-module/archive/v0.33.tar.gz && \
   tar xzf v0.33.tar.gz && \
-#  ls -l && \
+  git clone git://github.com/yaoweibin/ngx_http_substitutions_filter_module.git
   wget https://nginx.org/download/nginx-${VENDORVERSION}.tar.gz && \
   tar xzf nginx-${VENDORVERSION}.tar.gz && \
   cd /tmp/nginx-${VENDORVERSION} && \
@@ -72,6 +72,7 @@ RUN \
     --with-stream_realip_module \
     --with-http_slice_module \
     --with-http_v2_module \
+	--add-module=/tmp/ngx_http_substitutions_filter_module \
     --add-module=/tmp/headers-more-nginx-module-0.33 && \
   make && \
   make install && \
