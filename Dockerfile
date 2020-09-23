@@ -36,6 +36,8 @@ RUN set -x ; \
     addgroup -g 82 -S www-data ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
 
+RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
+
 COPY ./CHANGELOG /CHANGELOG
 COPY ./nginx /etc/nginx/
 COPY ./media /media/
