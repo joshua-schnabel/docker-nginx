@@ -28,7 +28,7 @@ RUN \
   runtime_pkgs="ca-certificates openssl pcre zlib tzdata bash curl coreutils logrotate" && \
   apk --no-cache add ${build_pkgs} ${runtime_pkgs} && \
   rm -rf /var/cache/apk/* && \
-  cd /tmp && && \
+  cd /tmp && \
   wget https://github.com/openresty/headers-more-nginx-module/archive/v0.33.tar.gz && \
   tar xzf v0.33.tar.gz && \
   git clone git://github.com/yaoweibin/ngx_http_substitutions_filter_module.git && \
