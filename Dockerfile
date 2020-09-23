@@ -1,10 +1,11 @@
+ARG ALPINEVERSION=3.12
+
+FROM alpine:$ALPINEVERSION
+
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
 ARG VENDORVERSION
-ARG ALPINEVERSION=3.12
-
-FROM alpine:$ALPINEVERSION
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.name="jschnabel/nginx" \
