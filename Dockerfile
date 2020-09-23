@@ -85,8 +85,8 @@ RUN \
 RUN set -x ; \
     addgroup -g 82 -S www-data ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
-	
-RUN mkdir -R /var/cache/nginx/ && chown -R www-data:www-data /var/cache/nginx/ && chmod -R 770 /var/cache/nginx/
+
+RUN mkdir -p /var/cache/nginx/ && chown -R www-data:www-data /var/cache/nginx/ && chmod -R 770 /var/cache/nginx/
 
 COPY ./CHANGELOG /CHANGELOG
 COPY ./nginx /etc/nginx/
