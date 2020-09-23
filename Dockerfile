@@ -31,7 +31,7 @@ RUN \
   cd /tmp && && \
   wget https://github.com/openresty/headers-more-nginx-module/archive/v0.33.tar.gz && \
   tar xzf v0.33.tar.gz && \
-  git clone git://github.com/yaoweibin/ngx_http_substitutions_filter_module.git
+  git clone git://github.com/yaoweibin/ngx_http_substitutions_filter_module.git && \
   wget https://nginx.org/download/nginx-${VENDORVERSION}.tar.gz && \
   tar xzf nginx-${VENDORVERSION}.tar.gz && \
   cd /tmp/nginx-${VENDORVERSION} && \
