@@ -31,7 +31,7 @@ RUN \
   cd /tmp && \
   wget https://github.com/openresty/headers-more-nginx-module/archive/v0.33.tar.gz && \
   tar xzf v0.33.tar.gz && \
-  git clone git://github.com/yaoweibin/ngx_http_substitutions_filter_module.git
+  git clone git://github.com/yaoweibin/ngx_http_substitutions_filter_module.git && \
   wget https://nginx.org/download/nginx-${VENDORVERSION}.tar.gz && \
   tar xzf nginx-${VENDORVERSION}.tar.gz && \
   cd /tmp/nginx-${VENDORVERSION} && \
@@ -48,8 +48,8 @@ RUN \
     --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
     --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
     --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
-    --user=nginx \
-    --group=nginx \
+    --user=www-data \
+    --group=www-data \
     --with-http_ssl_module \
     --with-http_realip_module \
     --with-http_addition_module \
@@ -85,6 +85,8 @@ RUN \
 RUN set -x ; \
     addgroup -g 82 -S www-data ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
+	
+RUN mkdir -R /var/cache/nginx/ && chown -R www-data:www-data /var/cache/nginx/ && chmod -R 770 /var/cache/nginx/
 
 COPY ./CHANGELOG /CHANGELOG
 COPY ./nginx /etc/nginx/
@@ -104,8 +106,6 @@ RUN mkdir -p /media/data && \
 COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
-
-#RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
 
 VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
 
