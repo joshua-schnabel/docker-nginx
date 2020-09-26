@@ -1,9 +1,12 @@
-FROM alpine:3.11
+ARG ALPINEVERSION="3.12"
 
-ARG BUILD_DATE
-ARG VCS_REF
-ARG VERSION
-ARG INTVERSION
+FROM alpine:$ALPINEVERSION
+
+ARG BUILD_DATE=""
+ARG VCS_REF=""
+ARG VERSION=""
+ARG VENDORVERSION=""
+
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.name="jschnabel/nginx" \
       org.label-schema.description="Lightweight Nginx container" \
@@ -14,14 +17,16 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.version=$VERSION \
       org.label-schema.schema-version="1.0" \
       Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
-      Description="Lightweight Nginx container."
-	  
+      Description="Lightweight Nginx container." \
+      nginx-version=$VENDORVERSION \
+      alpine-version=$ALPINEVERSION
+
 ENV DISABLETLS="false"
 
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
-    apk --no-cache add "nginx=$INTVERSION" "nginx-mod-http-headers-more=$INTVERSION" "nginx-mod-stream=$INTVERSION" "nginx-mod-mail=$INTVERSION" && \
+    apk --no-cache add "nginx=$VENDORVERSION" "nginx-mod-http-headers-more=$VENDORVERSION" "nginx-mod-stream=$VENDORVERSION" "nginx-mod-mail=$VENDORVERSION" && \
 	apk --no-cache add logrotate && \
 	rm -rf /var/cache/apk/*
 
@@ -30,6 +35,8 @@ RUN apk update && apk upgrade && \
 RUN set -x ; \
     addgroup -g 82 -S www-data ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
+
+RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
 
 COPY ./CHANGELOG /CHANGELOG
 COPY ./nginx /etc/nginx/
