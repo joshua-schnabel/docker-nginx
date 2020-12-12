@@ -92,7 +92,7 @@ jobs:
   github:
     needs: [docker]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' && github.event_name != 'schedule'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
