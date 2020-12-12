@@ -14,3 +14,4 @@ runs:
             t_value=${t_env[1]}
             echo "$t_name=$t_value" >> $GITHUB_ENV
         done < /tmp/env
+
