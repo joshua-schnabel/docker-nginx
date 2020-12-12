@@ -43,11 +43,11 @@ runs:
         echo "::set-output name=VERSION_RELEASE::$VERSION_RELEASE"
         echo "::set-output name=VERSION_MINOR::$VERSION_MINOR"
         echo "::set-output name=BRANCH::$BRANCH"
-        echo "::set-env name=VERSION::$VERSION"
-        echo "::set-env name=BUILD_DATE::$BUILD_DATE"
-        echo "::set-env name=GITHASH::$GITHASH"
-        echo "::set-env name=VERSION_RELEASE::$VERSION_RELEASE"
-        echo "::set-env name=BRANCH::$BRANCH"
-        echo "::set-env name=VERSION_MINOR::$VERSION_MINOR"
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
+        echo "GITHASH=$GITHASH" >> $GITHUB_ENV
+        echo "VERSION_RELEASE=$VERSION_RELEASE" >> $GITHUB_ENV
+        echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+        echo "VERSION_MINOR=$VERSION_MINOR" >> $GITHUB_ENV
       shell: bash
   using: composite

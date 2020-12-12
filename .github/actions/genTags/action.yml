@@ -42,4 +42,4 @@ runs:
         fi
         echo ">>$TAGS<<"
         echo "::set-output name=TAGS::$TAGS"
-        echo "::set-env name=TAGS::$TAGS"
+        echo "TAGS=$TAGS" >> $GITHUB_ENV
