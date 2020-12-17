@@ -229,6 +229,36 @@ stream {
 }
 ```
 
+### Basic Auth
+
+This image also includes a configuration for Basic-Auth authentication. This can be added as follows. 
+
+```
+	location / {
+		include /media/data/snippets/basic_auth.conf;
+		
+		root   /media/data/webroot/<your.domain>;
+		index  index.html index.htm;
+	}
+```
+
+To add a user, the following command can be used.
+
+```
+docker run --rm jschnabel/nginx /media/data/scripts/addUser.sh /media/data/passwords/htpasswd
+```
+
+### Webdav
+
+There is also a configuration for a WebDav share. It is recommended that such a share is secured by authentication. 
+
+```
+	location / {
+		include /media/data/snippets/basic_auth.conf;
+		include /media/data/snippets/webdav.conf;
+	}
+```
+
 ### Log files
 
 The log files (error and access log) are stored under `/media/data/logs` by default. This directory can be mounted for external processing of the log files.
