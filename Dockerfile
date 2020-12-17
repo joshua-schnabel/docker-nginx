@@ -56,6 +56,7 @@ RUN mkdir -p /media/data && \
 COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /media/data/scripts/addUser.sh
 
 VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
 
