@@ -26,7 +26,7 @@ ENV DISABLETLS="false"
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
-    apk --no-cache add "nginx=$VENDORVERSION" "nginx-mod-http-headers-more=$VENDORVERSION" "nginx-mod-stream=$VENDORVERSION" "nginx-mod-mail=$VENDORVERSION" && \
+    apk --no-cache add "nginx=$VENDORVERSION" "nginx-mod-http-headers-more=$VENDORVERSION" "nginx-mod-stream=$VENDORVERSION" "nginx-mod-mail=$VENDORVERSION" "nginx-mod-http-dav-ext=$VENDORVERSION" && \
 	apk --no-cache add logrotate && \
 	rm -rf /var/cache/apk/*
 
