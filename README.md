@@ -245,7 +245,7 @@ This image also includes a configuration for Basic-Auth authentication. This can
 To add a user, the following command can be used.
 
 ```
-docker run --rm jschnabel/nginx /media/data/scripts/addUser.sh /media/data/passwords/htpasswd
+docker exec -it nginx_proxy /media/data/scripts/addUser.sh /media/data/passwords/htpasswd
 ```
 
 ### Webdav

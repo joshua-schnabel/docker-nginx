@@ -43,6 +43,8 @@ touch /media/data/logs/error.log
 touch /media/data/logs/access.1.log
 touch /media/data/logs/error.1.log
 
+chown -R www-data:www-data /media/data/webdav
+
 echo "Starting container version ${containerv} with nginx version ${nginxlocal}..."
 echo "Run $@"
 
