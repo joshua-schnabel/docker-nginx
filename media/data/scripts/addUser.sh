@@ -80,5 +80,6 @@ SHA1="$(printf "%s%s" "$PASSWORD" "$SALT" | openssl dgst -binary -sha1)"
 UH=$(printf "${USERNAME}:{SSHA}%s\n" "$(printf "%s%s" "$SHA1" "$SALT" | base64)")
 
 mkdir "/media/data/webdav/${USERNAME}"
+chown -R www-data:www-data "/media/data/webdav/${USERNAME}"
 
 echo "$UH" >> "$1"
