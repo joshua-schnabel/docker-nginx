@@ -54,7 +54,7 @@ RUN mkdir -p /media/data && \
     chown -R www-data:www-data /media/data && \
     touch /var/log/messages
 	
-ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua /media/data/lua/
+ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/0.20181120/prometheus.lua /media/data/lua/
 
 COPY entrypoint.sh /usr/local/bin/
 
