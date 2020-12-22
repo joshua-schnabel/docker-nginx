@@ -55,6 +55,8 @@ RUN mkdir -p /media/data && \
     touch /var/log/messages
 	
 ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua /media/data/lua/
+ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_resty_counter.lua /media/data/lua/
+ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_keys.lua /media/data/lua/
 
 RUN chmod -R 777 /media/data/lua/
 
