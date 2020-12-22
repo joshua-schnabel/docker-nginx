@@ -45,6 +45,7 @@ COPY ./logrotate.conf /etc/logrotate.d/nginx
 
 # Setup folders
 RUN mkdir -p /media/data && \
+	mkdir -p /media/data/lua && \
     mkdir -p /media/data/certs && \
     mkdir -p /media/data/dhparams && \
     mkdir -p /media/data/logs && \    
@@ -53,7 +54,9 @@ RUN mkdir -p /media/data && \
     chown -R www-data:www-data /media/data && \
     touch /var/log/messages
 	
-ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/0.20181120/prometheus.lua /etc/nginx/lua_modules/
+ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua /media/data/lua/
+
+RUN chmod -R 777 /media/data/lua/
 
 COPY entrypoint.sh /usr/local/bin/
 
