@@ -26,7 +26,7 @@ ENV DISABLETLS="false"
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
-    apk --no-cache add "nginx=$VENDORVERSION" "nginx-mod-http-headers-more=$VENDORVERSION" "nginx-mod-stream=$VENDORVERSION" "nginx-mod-mail=$VENDORVERSION" && \
+    apk --no-cache add "nginx=$VENDORVERSION" "lua-resty-core" "nginx-mod-http-lua=$VENDORVERSION" "nginx-mod-http-headers-more=$VENDORVERSION" "nginx-mod-stream=$VENDORVERSION" "nginx-mod-mail=$VENDORVERSION" "nginx-mod-http-dav-ext=$VENDORVERSION" && \
 	apk --no-cache add logrotate && \
 	rm -rf /var/cache/apk/*
 
@@ -45,6 +45,7 @@ COPY ./logrotate.conf /etc/logrotate.d/nginx
 
 # Setup folders
 RUN mkdir -p /media/data && \
+	mkdir -p /media/data/lua && \
     mkdir -p /media/data/certs && \
     mkdir -p /media/data/dhparams && \
     mkdir -p /media/data/logs && \    
@@ -52,10 +53,17 @@ RUN mkdir -p /media/data && \
     mkdir -p /media/data/streams && \
     chown -R www-data:www-data /media/data && \
     touch /var/log/messages
+	
+ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua /media/data/lua/
+ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_resty_counter.lua /media/data/lua/
+ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_keys.lua /media/data/lua/
+
+RUN chmod -R 777 /media/data/lua/
 
 COPY entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /media/data/scripts/addUser.sh
 
 VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
 
