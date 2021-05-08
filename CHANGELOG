@@ -1,6 +1,7 @@
 1.0.5
  - Added WebDav Snippet
  - Added BasicAuth Snippet
+ - Switch to Alpine 3.13
 
 1.0.4
  - Fix truncate File error
