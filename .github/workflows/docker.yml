@@ -2,7 +2,7 @@ name: docker
 
 env:
   IMAGE_NAME: jschnabel/nginx
-  ALPINEVERSION: 3.13
+  ALPINEVERSION: 3.14
 
 on:
   push:
