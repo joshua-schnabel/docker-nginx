@@ -42,7 +42,7 @@ jobs:
       - name: Generate Env File
         uses: ./.github/actions/generateEnv
         with:
-          variables: "VERSION,RELEASETYPE,VERSION_MINOR,TAGS,BRANCH,BUILD_DATE,GITHASH,VENDORVERSION"
+          variables: "VERSION,RELEASETYPE,VERSION_MINOR,TAGS,BRANCH,BUILD_DATE,GITHASH,VENDORVERSION,ALPINEVERSION"
       - name: Upload Env File
         uses: actions/upload-artifact@v2
         with:
