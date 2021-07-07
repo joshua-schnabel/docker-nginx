@@ -2,7 +2,6 @@ name: docker
 
 env:
   IMAGE_NAME: jschnabel/nginx
-  ALPINEVERSION: 3.13
 
 on:
   push:
@@ -23,10 +22,12 @@ jobs:
       - id: genNginxVersions
         name: Generate Nginx Versions
         run: |
-          echo "test"
+          ALPINEVERSION=$(curl -s "https://hub.docker.com/v2/repositories/library/alpine/tags" | jq '.results | sort_by(.name) | reverse[].name | match("^[0-9]*.[0-9]*$"; "s").string ' | head -n 1 | sed 's/"//g' | cat )
+          echo "ALPINEVERSION=$ALPINEVERSION"
           NGINXVERSION=$(curl -vs "https://pkgs.alpinelinux.org/package/v$ALPINEVERSION/main/x86_64/nginx" 2>&1 | grep -o -h -m 1 "[[:digit:]]\.[[:digit:]]\{1,2\}\.[[:digit:]]\{1,2\}-r[0-9]\{1,2\}")
           NGINXVERSIONSHORT=${NGINXVERSION%-*}
           echo "NGINXVERSION=$NGINXVERSION"
+          echo "ALPINEVERSION=$ALPINEVERSION" >> $GITHUB_ENV
           echo "VENDORVERSION=$NGINXVERSION" >> $GITHUB_ENV
           echo "VENDORVERSIONSHORT=$NGINXVERSION" >> $GITHUB_ENV
       - id: genTags
@@ -41,7 +42,7 @@ jobs:
       - name: Generate Env File
         uses: ./.github/actions/generateEnv
         with:
-          variables: "VERSION,RELEASETYPE,VERSION_MINOR,TAGS,BRANCH,BUILD_DATE,GITHASH,VENDORVERSION"
+          variables: "VERSION,RELEASETYPE,VERSION_MINOR,TAGS,BRANCH,BUILD_DATE,GITHASH,VENDORVERSION,ALPINEVERSION"
       - name: Upload Env File
         uses: actions/upload-artifact@v2
         with:
