@@ -1,5 +1,5 @@
 1.0.8
-
+ - Fix alpine and nginx version
 
 1.0.7
  - Added RateLimit Snippet
