@@ -26,7 +26,7 @@ ENV DISABLETLS="false"
 # Update packages and install packages 
 RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
-    apk --no-cache add nginx luajit lua-resty-core nginx-mod-http-lua nginx-mod-http-headers-more nginx-mod-stream nginx-mod-mail nginx-mod-http-dav-ext && \
+    apk --no-cache add nginx nginx-mod-http-lua nginx-mod-http-headers-more nginx-mod-stream nginx-mod-mail nginx-mod-http-dav-ext && \
 	apk --no-cache add logrotate && \
 	rm -rf /var/cache/apk/*
 
