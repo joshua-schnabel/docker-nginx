@@ -1,3 +1,6 @@
+1.0.7
+ - Added RateLimit Snippet
+
 1.0.6
  - Fixed missing metrics
  - Update to automatic alpine selection
