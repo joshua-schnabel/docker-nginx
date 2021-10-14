@@ -38,7 +38,7 @@ jobs:
           VERSION_MINOR: $VERSION_MINOR
           branch: $BRANCH
           isWeekly: ${{ github.event_name == 'schedule' }}
-          vendorVersion: $VENDORVERSIONSHORT
+          vendorVersion: $ALPINEVERSION
       - name: Generate Env File
         uses: ./.github/actions/generateEnv
         with:
