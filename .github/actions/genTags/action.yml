@@ -35,7 +35,7 @@ runs:
               TAGS=`echo -e "$IMAGENAME:latest,$IMAGENAME:$VERSION,$IMAGENAME:$VERSION_MINOR"`
             fi
             if [ ! -z "${{ inputs.vendorVersion }}" ] ; then
-              TAGS="$TAGS,$IMAGENAME:${{ inputs.vendorVersion }}"
+              TAGS="$TAGS,$IMAGENAME:vendor-${{ inputs.vendorVersion }}"
             fi
         elif [ ${{ inputs.branch }} = 'dev' ] ; then
            TAGS=`echo -e "$IMAGENAME:latest-dev,$IMAGENAME:$VERSION-dev,$IMAGENAME:$VERSION_MINOR-dev"`
