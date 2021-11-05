@@ -41,18 +41,20 @@ RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
 COPY ./CHANGELOG /CHANGELOG
 COPY ./nginx /etc/nginx/
 COPY ./media /media/
-COPY ./logrotate.conf /etc/logrotate.d/nginx
+COPY ./logrotate.conf /etc/logrotate.d/
 
 # Setup folders
 RUN mkdir -p /media/data && \
-	mkdir -p /media/data/lua && \
+    mkdir -p /media/data/lua && \
     mkdir -p /media/data/certs && \
     mkdir -p /media/data/dhparams && \
     mkdir -p /media/data/logs && \    
     mkdir -p /media/data/sites-enabled && \
     mkdir -p /media/data/streams && \
     chown -R www-data:www-data /media/data && \
-    touch /var/log/messages
+    touch /var/log/messages \
+    rm /etc/logrotate.d/nginx \
+    mv /etc/logrotate.d/logrotate.conf /etc/logrotate.d/nginx
 	
 ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua /media/data/lua/
 ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_resty_counter.lua /media/data/lua/
