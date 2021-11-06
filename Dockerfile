@@ -28,7 +28,6 @@ RUN apk update && apk upgrade && \
     apk --no-cache add bash curl openssl coreutils && \
     apk --no-cache add nginx nginx-mod-http-lua nginx-mod-http-headers-more nginx-mod-stream nginx-mod-mail nginx-mod-http-dav-ext && \
     apk --no-cache add logrotate && \
-    apk cache clean && \
     rm -rf /var/cache/apk/*
 
 # Ensure www-data user exists
