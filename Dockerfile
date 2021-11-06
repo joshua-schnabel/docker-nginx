@@ -36,12 +36,13 @@ RUN set -x ; \
     addgroup -g 82 -S www-data ; \
     adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
 
-RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
+RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/ && \
+    rm /etc/logrotate.d/nginx
 
 COPY ./CHANGELOG /CHANGELOG
 COPY ./nginx /etc/nginx/
 COPY ./media /media/
-COPY ./logrotate.conf /etc/logrotate.d/nginx_extern
+COPY ./logrotate.conf /etc/logrotate.d/nginx
 
 # Setup folders
 RUN mkdir -p /media/data && \
@@ -52,7 +53,8 @@ RUN mkdir -p /media/data && \
     mkdir -p /media/data/sites-enabled && \
     mkdir -p /media/data/streams && \
     chown -R www-data:www-data /media/data && \
-    touch /var/log/messages
+    touch /var/log/messages && \
+    chmod 644 /etc/logrotate.d/nginx
 	
 ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua /media/data/lua/
 ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_resty_counter.lua /media/data/lua/
