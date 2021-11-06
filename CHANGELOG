@@ -1,6 +1,7 @@
 1.1.0
  - Added conditional Caching
  - Removend /media/data/snippets/caching.conf
+ - Fixed Logrotate
  
 1.0.8
  - Fix alpine and nginx version
