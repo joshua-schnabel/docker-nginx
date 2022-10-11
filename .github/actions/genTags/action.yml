@@ -7,12 +7,7 @@ inputs:
     required: true
   branch:
     required: true
-    default: true
-  isWeekly:
-    required: true
-    default: false
-  vendorVersion:
-      required: false
+    default: "dev"
 outputs:
   TAGS:
     description: "TAGS"
@@ -27,18 +22,9 @@ runs:
         TAGS=""
         IMAGENAME="$IMAGE_NAME"
         if [ ${{ inputs.branch }} = 'master' ] ; then
-            if [ ${{ inputs.isWeekly }} = true ] ; then
-             echo 'Generate Weekly Tags'
-             TAGS=`echo -e "$IMAGENAME:latest-weekly,$IMAGENAME:$VERSION-weekly,$IMAGENAME:$VERSION_MINOR-weekly"`
-            else 
-              echo 'Generate Master Tags'
-              TAGS=`echo -e "$IMAGENAME:latest,$IMAGENAME:$VERSION,$IMAGENAME:$VERSION_MINOR"`
-            fi
-            if [ ! -z "${{ inputs.vendorVersion }}" ] ; then
-              TAGS="$TAGS,$IMAGENAME:vendor-${{ inputs.vendorVersion }}"
-            fi
+            TAGS=`echo -e "$IMAGENAME:latest,$IMAGENAME:$VERSION,$IMAGENAME:$VERSION_MINOR"`
         elif [ ${{ inputs.branch }} = 'dev' ] ; then
-           TAGS=`echo -e "$IMAGENAME:latest-dev,$IMAGENAME:$VERSION-dev,$IMAGENAME:$VERSION_MINOR-dev"`
+            TAGS=`echo -e "$IMAGENAME:latest-dev,$IMAGENAME:$VERSION-dev,$IMAGENAME:$VERSION_MINOR-dev"`
         fi
         echo ">>$TAGS<<"
         echo "::set-output name=TAGS::$TAGS"
