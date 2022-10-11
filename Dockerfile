@@ -18,8 +18,8 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.schema-version="1.0" \
       Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
       Description="Lightweight Nginx container." \
-      nginx-version=$VENDORVERSION \
-      alpine-version=$ALPINEVERSION
+	  alpine-version=$ALPINEVERSION \
+      nginx-version=$VENDORVERSION
 
 ENV DISABLETLS="false"
 
