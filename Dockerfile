@@ -1,6 +1,8 @@
-ARG ALPINEVERSION="3.16"
+ARG ALPINEVERSION="3.22"
 
 FROM alpine:$ALPINEVERSION
+ARG ALPINEVERSION
+ENV ALPINEVERSION=$ALPINEVERSION
 
 ARG BUILD_DATE=""
 ARG VCS_REF=""
@@ -18,60 +20,57 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.schema-version="1.0" \
       Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
       Description="Lightweight Nginx container." \
-	  alpine-version=$ALPINEVERSION \
+	  alpine-version=${ALPINEVERSION} \
       nginx-version=$VENDORVERSION
 
 ENV DISABLETLS="false"
 
-# Update packages and install packages 
-RUN apk update && apk upgrade && \
-    apk --no-cache add bash curl openssl coreutils && \
-    apk --no-cache add nginx nginx-mod-http-lua nginx-mod-http-headers-more nginx-mod-stream nginx-mod-mail nginx-mod-http-dav-ext && \
-    apk --no-cache add logrotate && \
-    rm -rf /var/cache/apk/*
-
-# Ensure www-data user exists
-# 82 is the standard uid/gid for "www-data" in Alpine
-RUN set -x ; \
-    addgroup -g 82 -S www-data ; \
-    adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1
-
-RUN chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/ && \
-    rm /etc/logrotate.d/nginx
+# Install dos2unix first to fix line endings
+RUN apk add --no-cache dos2unix
 
 COPY ./CHANGELOG /CHANGELOG
 COPY ./nginx /etc/nginx/
-COPY ./media /media/
-COPY ./logrotate.conf /etc/logrotate.d/nginx
+COPY ./application /application/
+COPY ./logrotate/logrotate.conf /etc/logrotate.d/nginx
 
-# Setup folders
-RUN mkdir -p /media/data && \
-    mkdir -p /media/data/lua && \
-    mkdir -p /media/data/certs && \
-    mkdir -p /media/data/dhparams && \
-    mkdir -p /media/data/logs && \    
-    mkdir -p /media/data/sites-enabled && \
-    mkdir -p /media/data/streams && \
-    chown -R www-data:www-data /media/data && \
+# Ensure www-data user exists und Rechte setzen
+RUN set -x ; \
+    addgroup -g 82 -S www-data ; \
+    adduser -u 82 -D -S -G www-data www-data ; \
+    mkdir -p /var/lib/nginx ; \
+    chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
+
+# Update packages, install nur benötigte Pakete, acme.sh und bereinigen
+RUN apk update && apk upgrade && \
+    apk --no-cache add bash curl openssl nginx nginx-mod-http-lua nginx-mod-http-headers-more nginx-mod-stream nginx-mod-mail nginx-mod-http-dav-ext logrotate dos2unix && \
+    rm -rf /var/cache/apk/* && \
+    # Fix line endings and set permissions
+    find /application -type f -name "*.sh" -exec dos2unix {} \; && \
+    find /application -type f -name "*.sh" -exec chmod +x {} \; && \
+    # Setup folders, Rechte 
+    mkdir -p /application/data && \
+    mkdir -p /application/data/lua && \
+    mkdir -p /application/data/certs && \
+    mkdir -p /application/data/dhparams && \
+    mkdir -p /application/data/logs && \
+    mkdir -p /application/data/sites-enabled && \
+    mkdir -p /application/data/streams && \
+    chown -R www-data:www-data /application/data && \
+    # Setup Logrotate
     touch /var/log/messages && \
-    chmod 644 /etc/logrotate.d/nginx
-	
-ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus.lua /media/data/lua/
-ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_resty_counter.lua /media/data/lua/
-ADD https://raw.githubusercontent.com/knyar/nginx-lua-prometheus/master/prometheus_keys.lua /media/data/lua/
+    chmod 644 /etc/logrotate.d/nginx && \
+    chmod -R 777 /application/data/lua/ && \
+    apk del dos2unix && \
+    curl https://get.acme.sh | sh -s && \
+    rm -rf /tmp/* /usr/share/doc /usr/share/man && \
+    dos2unix /application/entrypoint.sh && \
+    chmod +x /application/entrypoint.sh
 
-RUN chmod -R 777 /media/data/lua/
-
-COPY entrypoint.sh /usr/local/bin/
-
-RUN chmod +x /usr/local/bin/entrypoint.sh
-RUN chmod +x /media/data/scripts/addUser.sh
-
-VOLUME ["/media/data/logs","/media/data/certs","/media/data/dhparams","/media/data/webroot","/media/data/sites-enabled","/media/data/streams"]
+VOLUME ["/application/data/logs","/application/data/certs","/application/data/dhparams","/application/data/webroot","/application/data/sites-enabled","/application/data/streams"]
 
 HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
 
 STOPSIGNAL SIGTERM
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/application/entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
