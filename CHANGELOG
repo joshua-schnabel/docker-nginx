@@ -1,6 +1,12 @@
-1.2.1
- - ???
-
+1.3.0
+ - Restructure directory layout (moved from media to application folder)
+ - Added Prometheus metrics support with Lua modules
+ - Completely rewritten entrypoint.sh with SSL certificate management
+ - Added ACME support for automatic SSL certificate generation
+ - Updated Dockerfile with significant improvements
+ - Added new default configurations for sites
+ - Cleanup and optimization of configuration files
+ 
 1.2.0
  - New Nginx Version 1.22.0
  
