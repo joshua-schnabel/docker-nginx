@@ -1,53 +1,73 @@
----
-description: "Extract Versions from changelog"
 name: "Generate Versions"
+description: "Extract Versions from changelog"
 outputs:
   BRANCH:
     description: BRANCH
-    value: "${{ steps.generate_version.outputs.BRANCH }}"
+    value: ${{ steps.generate_version.outputs.BRANCH }}
   BUILD_DATE:
     description: BUILD_DATE
-    value: "${{ steps.generate_version.outputs.BUILD_DATE }}"
+    value: ${{ steps.generate_version.outputs.BUILD_DATE }}
   GITHASH:
     description: GITHASH
-    value: "${{ steps.generate_version.outputs.GITHASH }}"
+    value: ${{ steps.generate_version.outputs.GITHASH }}
   VERSION:
     description: VERSION
-    value: "${{ steps.generate_version.outputs.VERSION }}"
+    value: ${{ steps.generate_version.outputs.VERSION }}
   VERSION_MINOR:
     description: VERSION_MINOR
-    value: "${{ steps.generate_version.outputs.VERSION_MINOR }}"
-  VERSION_RELEASE:
+    value: ${{ steps.generate_version.outputs.VERSION_MINOR }}
+  RELEASETYPE:
     description: RELEASETYPE
-    value: "${{ steps.generate_version.outputs.RELEASETYPE }}"
+    value: ${{ steps.generate_version.outputs.RELEASETYPE }}
+  VERSION_RELEASE:
+    description: RELEASETYPE (deprecated)
+    value: ${{ steps.generate_version.outputs.RELEASETYPE }}
 runs:
+  using: "composite"
   steps:
-    - id: generate_version
-      name: "Generate Version"
-      run: |
-        VERSION=$(head -n 1 ./CHANGELOG | awk '{print tolower($0)}')
-        RELEASETYPE=$(echo $VERSION | cut -d '-' -f 2 -s)
-        VERSION_PATCH=${VERSION%-*}
-        if [ -z "$RELEASETYPE" ]
-        then
-          VERSION_MINOR=${VERSION_PATCH%.*}
-        else
-          VERSION_MINOR=${VERSION_PATCH%.*}-${RELEASETYPE}
-        fi
-        BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-        GITHASH=$(git rev-parse "$GITHUB_SHA")
-        BRANCH=$(echo "$GITHUB_REF" | cut -d '/' -f 3 -s)
-        echo "::set-output name=VERSION::$VERSION"
-        echo "::set-output name=BUILD_DATE::$BUILD_DATE"
-        echo "::set-output name=GITHASH::$GITHASH"
-        echo "::set-output name=VERSION_RELEASE::$VERSION_RELEASE"
-        echo "::set-output name=VERSION_MINOR::$VERSION_MINOR"
-        echo "::set-output name=BRANCH::$BRANCH"
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
-        echo "GITHASH=$GITHASH" >> $GITHUB_ENV
-        echo "VERSION_RELEASE=$VERSION_RELEASE" >> $GITHUB_ENV
-        echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-        echo "VERSION_MINOR=$VERSION_MINOR" >> $GITHUB_ENV
-      shell: bash
-  using: composite
+  - id: generate_version
+    name: "Generate Version"
+    shell: bash
+    run: |
+      set -euo pipefail
+      # Try to extract first semver from the top of the changelog (limit to first 50 lines for speed)
+      if [ -f ./CHANGELOG ]; then
+        VERSION=$(head -n 50 ./CHANGELOG | tr '[:upper:]' '[:lower:]' | grep -m 1 -Eo '[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9.]+)?' || true)
+      else
+        VERSION=""
+      fi
+
+      # Also try CHANGELOG.md if present
+      if [ -z "$VERSION" ] && [ -f ./CHANGELOG.md ]; then
+        VERSION=$(head -n 50 ./CHANGELOG.md | tr '[:upper:]' '[:lower:]' | grep -m 1 -Eo '[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9.]+)?' || true)
+      fi
+
+      # Fallback to VERSION file if CHANGELOG didn't yield a version
+      if [ -z "$VERSION" ] && [ -f ./VERSION ]; then
+        VERSION=$(tr -d ' \t\n\r' < ./VERSION | tr '[:upper:]' '[:lower:]')
+      fi
+
+      if [ -z "$VERSION" ]; then
+        echo "ERROR: Unable to determine version from CHANGELOG or VERSION file" >&2
+        exit 1
+      fi
+
+      RELEASETYPE=$(echo "$VERSION" | cut -d '-' -f 2 -s)
+      VERSION_PATCH=${VERSION%-*}
+      if [ -z "${RELEASETYPE:-}" ]; then
+        VERSION_MINOR=${VERSION_PATCH%.*}
+      else
+        VERSION_MINOR=${VERSION_PATCH%.*}-$RELEASETYPE
+      fi
+      BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      GITHASH="$GITHUB_SHA"
+      BRANCH="${GITHUB_REF_NAME:-$(echo "$GITHUB_REF" | awk -F'/' '{print $NF}') }"
+      BRANCH=${BRANCH%% *}
+      {
+        echo "VERSION=$VERSION"
+        echo "BUILD_DATE=$BUILD_DATE"
+        echo "GITHASH=$GITHASH"
+        echo "RELEASETYPE=$RELEASETYPE"
+        echo "VERSION_MINOR=$VERSION_MINOR"
+        echo "BRANCH=$BRANCH"
+      } >> "$GITHUB_OUTPUT"

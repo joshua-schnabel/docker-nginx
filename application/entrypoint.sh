@@ -1,6 +1,9 @@
 #!/bin/bash
 set -Eeo pipefail
 
+# Set secure umask for created files (e.g., keys 640/600)
+umask 027
+
 # Set important directory and file variables
 L_SITESENABLED_DIR="/application/data/sites-enabled/"
 L_SITESENABLED_DEFAULT="/application/data/sites-enabled/default.conf"
@@ -13,7 +16,11 @@ L_TLS_MODE="${TLS_MODE:-off}"
 L_FORCE_TLS="${FORCE_TLS:-false}"
 L_MAIL="${ACME_MAIL:-false}"
 L_ACME_SERVER="${ACME_SERVER:-letsencrypt}"
+L_ECC="${ACME_ECC:-true}"
+L_KEYLENGTH="${ACME_KEYLENGTH:-ec-384}"
 L_OUTPUT_FORMAT="${OUTPUT_FORMAT:-human}"
+
+L_COMMAND=("$@")
 
 # Logging function with timestamps (moved up for early use)
 log() {
@@ -61,6 +68,16 @@ if [[ ! "$L_OUTPUT_FORMAT" =~ ^(human|json)$ ]]; then
     exit 1
 fi
 
+if [[ ! "$L_ECC" =~ ^(true|false)$ ]]; then
+    log "ERROR" "🔧" "Invalid ACME_ECC: $L_ECC. Must be: true or false" >&2
+    exit 1
+fi
+
+if [[ ! "$L_KEYLENGTH" =~ ^(ec-256|ec-384|3072|4096)$ ]]; then
+    log "ERROR" "🔧" "Invalid ACME_KEYLENGTH: $L_KEYLENGTH. Must be: ec-256, ec-384, 3072, or 4096" >&2
+    exit 1
+fi
+
 # ACME specific validation
 if [ "$L_TLS_MODE" = "acme" ] && { [ -z "$L_MAIL" ] || [ "$L_MAIL" = "false" ]; }; then
     log "ERROR" "🔧" "ACME_MAIL is required when TLS_MODE=acme" >&2
@@ -95,6 +112,7 @@ log "INFO" "🔧" "TLS_MODE: $L_TLS_MODE | FORCE_TLS: $L_FORCE_TLS"
 
 # Function: Copy configuration files
 copy_nginx_configs() {
+    mkdir -p "$L_SITESENABLED_DIR"
     # Only copy configs if sites-enabled directory is empty
     if [ -z "$(ls -A $L_SITESENABLED_DIR)" ]; then
         log "INFO" "📁" "$L_SITESENABLED_DIR is empty, copying default configuration..."
@@ -142,13 +160,13 @@ generate_dh_params() {
             chmod 700 "$(dirname "$L_DHFILE")"
             
             # Generate DH params with progress suppressed, capture errors
-            if openssl dhparam -dsaparam -out "$L_DHFILE" 4096 2>/tmp/dhparam_error.log >/dev/null; then
+            if openssl dhparam -dsaparam -out "$L_DHFILE" 4096 2>/application/tmp/dhparam_error.log >/dev/null; then
                 chmod 644 "$L_DHFILE"
                 log "SUCCESS" "🧮" "DH parameters generated successfully"
             else
                 log "ERROR" "🧮" "Failed to generate DH parameters"
-                if [ -f /tmp/dhparam_error.log ] && [ -s /tmp/dhparam_error.log ]; then
-                    log "ERROR" "🧮" "OpenSSL error: $(cat /tmp/dhparam_error.log)"
+                if [ -f /application/tmp/dhparam_error.log ] && [ -s /application/tmp/dhparam_error.log ]; then
+                    log "ERROR" "🧮" "OpenSSL error: $(cat /application/tmp/dhparam_error.log)"
                 fi
                 exit 1
             fi
@@ -250,18 +268,18 @@ generate_ssl_certificates() {
                 log "INFO" "🔐" "Generating new certificate for: $group"
                 # Create secure directory for private keys
                 mkdir -p /application/data/certs
-                chmod 700 /application/data/certs
+                chmod 750 /application/data/certs
                 
                 # Generate certificate with progress suppressed, capture errors
-                if openssl req -x509 -newkey rsa:4096 -keyout "$key_file" -out "$cert_file" -days 365 -nodes -subj "/CN=$(echo $group | awk '{print $1}')" -addext "subjectAltName=$(echo $group | sed 's/\([^ ]\+\)/DNS:\1,/g;s/,$//')" 2>/tmp/cert_error.log >/dev/null; then
-                    # Set secure permissions on private key
+                if openssl req -x509 -newkey rsa:4096 -keyout "$key_file" -out "$cert_file" -days 365 -nodes -subj "/CN=$(echo $group | awk '{print $1}')" -addext "subjectAltName=$(echo $group | sed 's/\([^ ]\+\)/DNS:\1,/g;s/,$//')" 2>/application/tmp/cert_error.log >/dev/null; then
+                    # Set secure permissions on private key and cert
                     chmod 600 "$key_file"
-                    chmod 644 "$cert_file"
+                    chmod 640 "$cert_file"
                     log "SUCCESS" "🔐" "Certificate for $group created successfully with secure permissions"
                 else
                     log "ERROR" "🔐" "OpenSSL certificate generation failed for $group"
-                    if [ -f /tmp/cert_error.log ] && [ -s /tmp/cert_error.log ]; then
-                        log "ERROR" "🔐" "OpenSSL error: $(cat /tmp/cert_error.log)"
+                    if [ -f /application/tmp/cert_error.log ] && [ -s /application/tmp/cert_error.log ]; then
+                        log "ERROR" "🔐" "OpenSSL error: $(cat /application/tmp/cert_error.log)"
                     fi
                     exit 1
                 fi
@@ -276,7 +294,7 @@ generate_ssl_certificates() {
 # Function: Handle ACME certificate process
 handle_acme_certificates() {
     if [ "$L_TLS_MODE" = "acme" ]; then
-        ACME_SH="/root/.acme.sh/acme.sh"
+        ACME_SH="/application/bin/acmesh/acme.sh"
         
         # Check if acme.sh exists
         if [ ! -f "$ACME_SH" ]; then
@@ -289,32 +307,49 @@ handle_acme_certificates() {
         # 1. Check and add location block in all configs
         for conf in "$L_SITESENABLED_DIR"*.conf; do
             if [ -f "$conf" ]; then
-                server_name=$(grep -m1 'server_name' "$conf" | awk '{print $2}' | sed 's/;//')
+                server_name=$(grep -m1 'server_name' "$conf" | awk '{print $2}' | sed 's/;//' | tr -cd '[:alnum:].-')
                 if ! grep -q 'location[[:space:]]\^~[[:space:]]/\\.well-known/acme-challenge/' "$conf"; then
-                    sed -i "/server_name/a \\n    location ^~ /.well-known/acme-challenge/ {\n        alias /application/data/webroot/$server_name/.well-known/acme-challenge/;\n        try_files \\\$uri =404;\n    }\n" "$conf"
+                    # Define location block in variable
+                    LOCATION_BLOCK=$(cat <<EOF
+
+    location ^~ /.well-known/acme-challenge/ {
+        alias /application/data/webroot/$server_name/.well-known/acme-challenge/;
+        try_files \$uri =404;
+    }
+
+EOF
+)
+                    # Insert the content after the server_name line
+                    echo "$LOCATION_BLOCK" | sed -i "/server_name/r /dev/stdin" "$conf"
                     log "INFO" "🛠️" "Added ACME challenge location block to $conf"
                 fi
             fi
         done
         # 2. Start nginx temporarily in the background
         log "INFO" "🌐" "Starting temporary nginx for ACME challenge"
-        
+
         # Test nginx configuration first
         if ! nginx -t 2>/dev/null; then
             log "ERROR" "🌐" "nginx configuration test failed"
+            nginx -t
             exit 1
         fi
         
         # Start nginx in background and capture any immediate errors
-        nginx 2>/tmp/nginx_error.log &
+        nginx 2>/application/tmp/nginx_error.log &
         NGINX_PID=$!
         sleep 3
+
+        # Get the actual nginx master process PID
+        NGINX_MASTER_PID=$(ps | grep "nginx: master process" | grep -v grep | awk '{print $1}')
         
         # Check if nginx is still running and listening
-        if ! ps -p $NGINX_PID > /dev/null 2>&1; then
+        if [ -n "$NGINX_MASTER_PID" ]; then
+            log "SUCCESS" "🌐" "nginx master process (PID: $NGINX_MASTER_PID) is running"
+        else
             log "ERROR" "🌐" "nginx process died after startup"
-            if [ -f /tmp/nginx_error.log ] && [ -s /tmp/nginx_error.log ]; then
-                log "ERROR" "🌐" "nginx error: $(cat /tmp/nginx_error.log)"
+            if [ -f /application/tmp/nginx_error.log ] && [ -s /application/tmp/nginx_error.log ]; then
+                log "ERROR" "🌐" "nginx error: $(cat /application/tmp/nginx_error.log)"
             fi
             exit 1
         fi
@@ -333,16 +368,44 @@ handle_acme_certificates() {
             if [ ! -f "$cert_path.pem" ]; then
                 need_cert=true
             else
-                if openssl x509 -in "$cert_path.pem" -noout -issuer 2>/dev/null | grep -qi "self signed"; then
+                # Check if certificate is self-signed by comparing subject and issuer
+                subject=$(openssl x509 -in "$cert_path.pem" -noout -subject 2>/dev/null | cut -d= -f2-)
+                issuer=$(openssl x509 -in "$cert_path.pem" -noout -issuer 2>/dev/null | cut -d= -f2-)
+                if [ "$subject" = "$issuer" ]; then
                     need_cert=true
+                    log "INFO" "🛡️" "Certificate for $group is self-signed, will request ACME certificate"
                 fi
             fi
             if [ "$need_cert" = true ]; then
-                log "INFO" "🛡️" "Starting acme.sh for: $group (Webroot: $WEBROOT, Server: $L_ACME_SERVER)"
-                if ! $ACME_SH --issue --ecc --keylength ec-384 --webroot "$WEBROOT" $acme_domains --server "$L_ACME_SERVER" --accountemail "$L_MAIL" --cert-file "$cert_path.pem" --key-file "$cert_path.key" --fullchain-file "$cert_path.fullchain.pem" --reloadcmd 'nginx -s reload'; then
-                    log "ERROR" "🛡️" "acme.sh failed for $group"
+                log "INFO" "🛡️" "Starting acme.sh for: $group (Webroot: $WEBROOT, Server: $L_ACME_SERVER, ECC: $L_ECC, KeyLength: $L_KEYLENGTH)"
+                
+                # Build acme.sh command with configurable parameters
+                acme_cmd="$ACME_SH --issue --webroot \"$WEBROOT\" $acme_domains --server \"$L_ACME_SERVER\" --accountemail \"$L_MAIL\" --cert-file \"$cert_path.pem\" --key-file \"$cert_path.key\" --fullchain-file \"$cert_path.fullchain.pem\" --reloadcmd 'nginx -s reload'"
+                
+                # Add ECC and keylength parameters if ECC is enabled
+                if [ "$L_ECC" = "true" ]; then
+                    acme_cmd="$acme_cmd --ecc --keylength $L_KEYLENGTH"
                 else
+                    # For RSA keys, only use numeric keylengths
+                    case "$L_KEYLENGTH" in
+                        "3072"|"4096")
+                            acme_cmd="$acme_cmd --keylength $L_KEYLENGTH"
+                            ;;
+                        *)
+                            log "WARN" "🛡️" "RSA mode selected but ECC keylength specified, using default RSA 4096"
+                            acme_cmd="$acme_cmd --keylength 4096"
+                            ;;
+                    esac
+                fi
+                
+                # Execute acme.sh command
+                if eval $acme_cmd; then
+                    # Enforce secure permissions on issued files
+                    chmod 600 "$cert_path.key" 2>/dev/null || true
+                    chmod 640 "$cert_path.pem" "$cert_path.fullchain.pem" 2>/dev/null || true
                     log "SUCCESS" "🛡️" "acme.sh succeeded for $group"
+                else
+                    log "ERROR" "🛡️" "acme.sh failed for $group"
                 fi
             else
                 log "INFO" "🛡️" "acme.sh: Certificate for $group already exists and is valid"
@@ -350,72 +413,102 @@ handle_acme_certificates() {
         done
         # 4. Stop temporary nginx and wait for it to finish
         log "INFO" "🛑" "Stopping temporary nginx"
-        if ! nginx -s stop; then
-            log "WARN" "🛑" "nginx could not be stopped gracefully, trying kill"
-            if ps -p $NGINX_PID > /dev/null 2>&1; then
-                kill $NGINX_PID 2>/dev/null || true
+
+        nginx -s stop 2>/dev/null;
+        
+        # Wait for nginx master process to stop
+        if [ -n "$(ps | grep "0:00 nginx:" | grep -v grep)" ]; then
+            local count=0
+            while [ -n "$(ps | grep "0:00 nginx:" | grep -v grep)" ] && [ $count -lt 10 ]; do
+                sleep 1
+                count=$((count + 1))
+            done
+            
+            # Force kill if still running
+            if [ -n "$(ps | grep "0:00 nginx:" | grep -v grep)" ]; then
+                log "WARN" "🛑" "Force killing nginx processes"
+                kill -9 $NGINX_MASTER_PID 2>/dev/null || true
+                ps | grep "0:00 nginx:" | grep -v grep | awk '{print $1}' | xargs -r kill -9 2>/dev/null || true
             fi
-        fi
-        if ps -p $NGINX_PID > /dev/null 2>&1; then
-            wait $NGINX_PID
         fi
         log "SUCCESS" "🛡️" "ACME certificate process completed"
     fi
 }
 
+# Function: Check directory permissions and create if needed
+check_directory() {
+    local dir="$1"
+    local description="${32:-$dir}"
+    
+    if [ ! -w "$dir" ]; then
+        log "ERROR" "📂" "No write permissions for $description - aborting"
+        exit 1
+    fi
+}
+
+# Function: Check file permissions and create if needed
+check_file() {
+    local file="$1"
+    local description="${2:-$file}"
+    
+    if [ -f "$file" ] && [ ! -w "$file" ]; then
+        log "ERROR" "📄" "No write permissions for $description - aborting"
+        exit 1
+    fi
+}
+
 # Function: Setup log files and directories
 setup_environment() {
-    # Ensure log files exist
-    # (Nginx will not start if log files are missing)
-    log "INFO" "🗂️" "Checking log files..."
-    mkdir -p /application/data/logs
-    for logfile in access.log error.log access.1.log error.1.log; do
-        if ! touch "/application/data/logs/$logfile"; then
-            log "ERROR" "🗂️" "Could not create log file: $logfile"
-            exit 1
-        fi
-    done
+    log "INFO" "📂" "Checking write permissions for required directories..."
     
-    log "INFO" "📂" "Setting permissions for WebDAV directory..."
-    mkdir -p /application/data/webdav
-    if ! chown -R www-data:www-data /application/data/webdav 2>/dev/null; then
-        log "WARN" "🗂️" "Could not set WebDAV permissions (user www-data may not exist)"
-    fi
+    # Check application directories
+    check_directory "/application/tmp" "/application/tmp"
+    check_directory "/application/data" "/application/data"
+    check_directory "/application/data/webdav" "WebDAV directory /application/data/webdav"
+    
+    # Check nginx runtime directories
+    check_directory "/var/run/nginx" "/var/run/nginx"
+    check_directory "/var/log/nginx" "/var/log/nginx"
+    check_directory "/var/lib/nginx" "/var/lib/nginx"
+    
+    # Check nginx PID file permissions
+    check_file "/var/run/nginx.pid" "nginx PID file /var/run/nginx.pid"
+    
+    log "SUCCESS" "📂" "All directory and file permissions verified successfully"
 }
 
 # Function: Start services
 start_services() {
-    log "INFO" "➡️" "Starting container..."
-
     # Start cron daemon in background for logrotate etc.
     log "INFO" "⏲️" "Starting cron daemon..."
     if /usr/sbin/crond -b -l 8; then
         log "SUCCESS" "⏲️" "Cron daemon started successfully"
     else
-        log "WARN" "⏲️" "Cron daemon could not be started!"
+        log "ERROR" "⏲️" "Cron daemon could not be started!"
+        exit 1;
     fi
 
     # Start nginx (or passed command) with OpenSSL config
-    if [ $# -eq 0 ]; then
+    if [ ${#L_COMMAND[@]} -eq 0 ]; then
         log "INFO" "➡️" "No start command provided, starting nginx as default"
         env OPENSSL_CONF=/etc/nginx/openssl.conf nginx -g 'daemon off;' 2>&1
     else
-        env OPENSSL_CONF=/etc/nginx/openssl.conf "$@" 2>&1
+        log "INFO" "➡️" "Starting with command: ${L_COMMAND[*]}"
+        env OPENSSL_CONF=/etc/nginx/openssl.conf "${L_COMMAND[@]}" 2>&1
     fi
 }
 
 # ============================================================================
 # MAIN EXECUTION FLOW
 # ============================================================================
+# Setup environment (log files, directories)
+setup_environment
 
 # Copy nginx configuration files
 copy_nginx_configs
 
 # Generate DH parameters
 generate_dh_params
-
-# Setup environment (log files, directories)
-setup_environment
 
 # Collect domains from nginx configs
 collect_domains

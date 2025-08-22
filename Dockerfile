@@ -23,54 +23,75 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 	  alpine-version=${ALPINEVERSION} \
       nginx-version=$VENDORVERSION
 
-ENV DISABLETLS="false"
+# Statische Konfigurationen früher kopieren (ändern selten)
+COPY --chown=root:root ./nginx /etc/nginx/
+COPY --chown=root:root ./logrotate/logrotate.conf /etc/logrotate.d/nginx
 
-# Install dos2unix first to fix line endings
-RUN apk add --no-cache dos2unix
+# App-Inhalte kopieren (ändern häufiger) und in einem Schritt vorbereiten
+COPY --chown=www-data:www-data --chmod=770 ./application /application/
 
-COPY ./CHANGELOG /CHANGELOG
-COPY ./nginx /etc/nginx/
-COPY ./application /application/
-COPY ./logrotate/logrotate.conf /etc/logrotate.d/nginx
+WORKDIR /application
 
-# Ensure www-data user exists und Rechte setzen
-RUN set -x ; \
-    addgroup -g 82 -S www-data ; \
-    adduser -u 82 -D -S -G www-data www-data ; \
-    mkdir -p /var/lib/nginx ; \
-    chown -R www-data:www-data /var/lib/nginx/ && chmod -R 770 /var/lib/nginx/
+# Pakete + User + Basisverzeichnisse in einem Layer
+RUN set -eux; \
+    apk --no-cache add bash openssl curl nginx nginx-mod-http-lua nginx-mod-http-headers-more nginx-mod-stream nginx-mod-mail nginx-mod-http-dav-ext logrotate; \
+    # Gruppe/Benutzer idempotent anlegen (fallback ohne feste IDs, falls 82 bereits belegt)
+    grep -q '^www-data:' /etc/group || addgroup -S -g 82 www-data || addgroup -S www-data; \
+    id -u www-data >/dev/null 2>&1 || adduser -D -S -G www-data -u 82 www-data || adduser -D -S -G www-data www-data; \
+    mkdir -p /var/lib/nginx /var/run/nginx /var/log/nginx; \
+    # Logfiles
+    touch /application/data/logs/access.log /application/data/logs/error.log /application/data/logs/access.1.log /application/data/logs/error.1.log; \
+    chown -R www-data:www-data /var/lib/nginx /var/run/nginx /var/log/nginx /application; \
+    chmod -R 770 /var/lib/nginx; 
 
-# Update packages, install nur benötigte Pakete, acme.sh und bereinigen
-RUN apk update && apk upgrade && \
-    apk --no-cache add bash curl openssl nginx nginx-mod-http-lua nginx-mod-http-headers-more nginx-mod-stream nginx-mod-mail nginx-mod-http-dav-ext logrotate dos2unix && \
-    rm -rf /var/cache/apk/* && \
-    # Fix line endings and set permissions
-    find /application -type f -name "*.sh" -exec dos2unix {} \; && \
-    find /application -type f -name "*.sh" -exec chmod +x {} \; && \
-    # Setup folders, Rechte 
-    mkdir -p /application/data && \
-    mkdir -p /application/data/lua && \
-    mkdir -p /application/data/certs && \
-    mkdir -p /application/data/dhparams && \
-    mkdir -p /application/data/logs && \
-    mkdir -p /application/data/sites-enabled && \
-    mkdir -p /application/data/streams && \
-    chown -R www-data:www-data /application/data && \
-    # Setup Logrotate
-    touch /var/log/messages && \
-    chmod 644 /etc/logrotate.d/nginx && \
-    chmod -R 777 /application/data/lua/ && \
-    apk del dos2unix && \
-    curl https://get.acme.sh | sh -s && \
-    rm -rf /tmp/* /usr/share/doc /usr/share/man && \
-    dos2unix /application/entrypoint.sh && \
-    chmod +x /application/entrypoint.sh
+RUN set -eux; \
+    apk --no-cache add dos2unix; \
+    # Shell-Skripte normalisieren + ausführbar machen
+    find /application -type f -name "*.sh" -exec dos2unix {} \; -exec chmod +x {} \;; \
+    # Placeholder-Dateien entfernen
+    find /application -type f -name ".gitkeep" -delete; \
+    \
+    # Nginx Laufzeitdateien
+    touch /var/run/nginx.pid; chown www-data:www-data /var/run/nginx.pid; \
+    \
+    # Logrotate/Permissions
+    touch /var/log/messages 2>/dev/null || true; \
+    chmod 644 /etc/logrotate.d/nginx; \
+    chmod -R 755 /application/data/lua/; \
+    \
+    # entrypoint
+    dos2unix /application/entrypoint.sh; \
+    chmod +x /application/entrypoint.sh; \
+    # Cleanup
+    rm -rf /tmp/* /usr/share/doc /usr/share/man; \
+    rm -rf /var/cache/apk/*; \
+    apk del dos2unix; \
+    rm -rf /application/bin/acmesh/dnsapi /application/bin/acmesh/deploy /application/bin/acmesh/notify || true
+
+RUN set -eux; \
+    # acme.sh installieren
+    apk --no-cache add git; \
+    cd /tmp; \
+    git clone --depth 1 https://github.com/acmesh-official/acme.sh.git; \
+    cd /tmp/acme.sh; \
+    ./acme.sh --install --home /application/bin/acmesh --config-home /application/bin/acmesh/data --cert-home /application/bin/acmesh/certs; \
+    chown -R www-data:www-data /application/bin/; \
+    # Cleanup
+    rm -rf /tmp/* /usr/share/doc /usr/share/man; \
+    rm -rf /var/cache/apk/*; \
+    apk del git; \
+    rm -rf /application/bin/acmesh/dnsapi /application/bin/acmesh/deploy /application/bin/acmesh/notify || true
+
+# Sehr häufige Änderungen ganz am Ende (vermeidet Cache-Bust der schweren Layer)
+COPY --chown=root:root ./CHANGELOG /CHANGELOG
 
 VOLUME ["/application/data/logs","/application/data/certs","/application/data/dhparams","/application/data/webroot","/application/data/sites-enabled","/application/data/streams"]
 
-HEALTHCHECK CMD curl -f http://localhost:4444/health || exit 1;
+HEALTHCHECK --interval=30s --timeout=2s --start-period=20s --retries=3 CMD wget -qO- http://127.0.0.1:4444/health >/dev/null || exit 1
 
 STOPSIGNAL SIGTERM
+
+USER www-data
 
 ENTRYPOINT ["/application/entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

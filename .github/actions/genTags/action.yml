@@ -1,13 +1,20 @@
-name: "Generate Versions"
-description: "Extract Versions from changelog"
+name: "Generate Tags"
+description: "Generate image tags"
 inputs:
   VERSION:
+    description: "Full semantic version (e.g., 1.2.3[-suffix])"
     required: true
   VERSION_MINOR:
+    description: "Minor version (e.g., 1.2 or 1.2-suffix)"
     required: true
   branch:
+    description: "Current branch name"
     required: true
     default: "dev"
+  RELEASETYPE:
+    description: "Release suffix if prerelease (e.g., rc.1), empty for stable"
+    required: false
+    default: ""
 outputs:
   TAGS:
     description: "TAGS"
@@ -15,17 +22,36 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Generate Tags
-      id: generate_tags
-      shell: bash
-      run: |
-        TAGS=""
-        IMAGENAME="$IMAGE_NAME"
-        if [ ${{ inputs.branch }} = 'master' ] ; then
-            TAGS=`echo -e "$IMAGENAME:latest,$IMAGENAME:$VERSION,$IMAGENAME:$VERSION_MINOR"`
-        elif [ ${{ inputs.branch }} = 'dev' ] ; then
-            TAGS=`echo -e "$IMAGENAME:latest-dev,$IMAGENAME:$VERSION-dev,$IMAGENAME:$VERSION_MINOR-dev"`
+  - name: Generate Tags
+    id: generate_tags
+    shell: bash
+    run: |
+      set -euo pipefail
+      IMAGENAME="${IMAGE_NAME}"
+      if [ -z "${IMAGENAME:-}" ]; then
+        echo "ERROR: IMAGE_NAME environment variable is not set" >&2
+        exit 1
+      fi
+      VERSION="${{ inputs.VERSION }}"
+      VERSION_MINOR="${{ inputs.VERSION_MINOR }}"
+      BRANCH="${{ inputs.branch }}"
+      RELEASETYPE="${{ inputs.RELEASETYPE }}"
+      if [ "$BRANCH" = "master" ] && [ -n "${RELEASETYPE:-}" ]; then
+        echo "ERROR: Non-stable releases (RELEASETYPE='$RELEASETYPE') are not allowed on master" >&2
+        exit 1
+      fi
+      if [ "$BRANCH" = "master" ]; then
+        if [ -z "${RELEASETYPE:-}" ]; then
+          TAGS="$IMAGENAME:latest,$IMAGENAME:$VERSION,$IMAGENAME:$VERSION_MINOR"
+        else
+          TAGS="$IMAGENAME:$VERSION,$IMAGENAME:$VERSION_MINOR"
         fi
-        echo ">>$TAGS<<"
-        echo "::set-output name=TAGS::$TAGS"
-        echo "TAGS=$TAGS" >> $GITHUB_ENV
+      elif [ "$BRANCH" = "dev" ]; then
+        TAGS="$IMAGENAME:latest-dev,$IMAGENAME:$VERSION-dev,$IMAGENAME:$VERSION_MINOR-dev"
+      else
+        TAGS="$IMAGENAME:$VERSION-$BRANCH,$IMAGENAME:$VERSION_MINOR-$BRANCH"
+      fi
+      # Deduplicate and sanitize tags
+      TAGS=$(echo "$TAGS" | tr ',' '\n' | awk 'NF && !seen[$0]++' | paste -sd, -)
+      echo ">>$TAGS<<"
+      echo "TAGS=$TAGS" >> "$GITHUB_OUTPUT"
