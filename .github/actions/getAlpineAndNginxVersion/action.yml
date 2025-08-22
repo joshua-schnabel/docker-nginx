@@ -25,7 +25,9 @@ runs:
         exit 1
       fi
       echo "ALPINEVERSION=$ALPINEVERSION"
-      NGINXVERSION=$(curl -fsSL "https://pkgs.alpinelinux.org/package/v$ALPINEVERSION/main/x86_64/nginx" | grep -o -h -m 1 "[[:digit:]]\.[[:digit:]]\{1,2\}\.[[:digit:]]\{1,2\}-r[0-9]\{1,2\}")
+      # Fetch full page first to avoid curl exiting with code 23 due to downstream early pipe close
+      PKG_PAGE=$(curl -fsSL --retry 5 --retry-delay 1 "https://pkgs.alpinelinux.org/package/v$ALPINEVERSION/main/x86_64/nginx")
+      NGINXVERSION=$(printf '%s' "$PKG_PAGE" | grep -o -h -m 1 "[[:digit:]]\.[[:digit:]]\{1,2\}\.[[:digit:]]\{1,2\}-r[0-9]\{1,2\}")
       if [ -z "${NGINXVERSION:-}" ]; then
         echo "ERROR: Unable to detect NGINXVERSION for Alpine $ALPINEVERSION" >&2
         exit 1
