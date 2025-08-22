@@ -6,7 +6,8 @@
  - Updated Dockerfile with significant improvements
  - Added new default configurations for sites
  - Cleanup and optimization of configuration files
- 
+ - Security improvements
+
 1.2.0
  - New Nginx Version 1.22.0
  
