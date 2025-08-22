@@ -8,7 +8,7 @@
 [![](https://img.shields.io/github/issues/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/issues)
 
  ___A lightweight, pre-configured nginx container with HTTP 2.0, TLS1.3 and SSL Labs A rating___
- 
+ git a
 Current Version: 
 [![](https://img.shields.io/docker/v/jschnabel/nginx/latest?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
 [![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags) 
