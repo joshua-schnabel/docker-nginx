@@ -2,18 +2,14 @@ version: '3.8'
 
 services:
   nginx:
-    build: .
     container_name: nginx-capdrop
     restart: unless-stopped
+    image: nginx:latest-dev
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./data/logs:/application/data/logs:rw
-      - ./data/certs:/application/data/certs:rw
-      - ./data/sites-enabled:/application/data/sites-enabled:rw
-      - ./data/webroot:/application/data/webroot:rw
-      - ./data/streams:/application/data/streams:rw
+      - ./data_delete:/application/data:rw
     environment:
       - TLS_MODE=acme
       - FORCE_TLS=true
@@ -21,21 +17,19 @@ services:
       - ACME_SERVER=letsencrypt
       - ACME_ECC=true
       - ACME_KEYLENGTH=ec-384
-      - OUTPUT_FORMAT=json
+      - OUTPUT_FORMAT=human
     security_opt:
       - no-new-privileges:true
     cap_drop:
       - ALL
     cap_add:
-      - CHOWN
-      - DAC_OVERRIDE
-      - SETGID
-      - SETUID
       - NET_BIND_SERVICE
     read_only: true
     tmpfs:
-      - /tmp:size=100M,noexec,nosuid,nodev
-      - /var/run:size=10M,noexec,nosuid,nodev
+      - /application/run:size=2M,uid=1001,gid=1001,mode=0770,noexec,nosuid,nodev
+      - /application/tmp:size=32M,uid=1001,gid=1001,mode=0770,noexec,nosuid,nodev
+      - /var/lib/nginx/logs:size=8M,uid=1001,gid=1001,mode=0755,noexec,nosuid,nodev
+      - /application/bin/acmesh/ca/:size=8M,uid=1001,gid=1001,mode=0755,noexec,nosuid,nodev
     ulimits:
       nproc: 65535
       nofile:

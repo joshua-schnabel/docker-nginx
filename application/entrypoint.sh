@@ -308,7 +308,8 @@ handle_acme_certificates() {
         for conf in "$L_SITESENABLED_DIR"*.conf; do
             if [ -f "$conf" ]; then
                 server_name=$(grep -m1 'server_name' "$conf" | awk '{print $2}' | sed 's/;//' | tr -cd '[:alnum:].-')
-                if ! grep -q 'location[[:space:]]\^~[[:space:]]/\\.well-known/acme-challenge/' "$conf"; then
+                # Only add ACME location block if the challenge path is not already present
+                if ! grep -qF '/.well-known/acme-challenge/' "$conf"; then
                     # Define location block in variable
                     LOCATION_BLOCK=$(cat <<EOF
 
@@ -380,7 +381,7 @@ EOF
                 log "INFO" "🛡️" "Starting acme.sh for: $group (Webroot: $WEBROOT, Server: $L_ACME_SERVER, ECC: $L_ECC, KeyLength: $L_KEYLENGTH)"
                 
                 # Build acme.sh command with configurable parameters
-                acme_cmd="$ACME_SH --issue --webroot \"$WEBROOT\" $acme_domains --server \"$L_ACME_SERVER\" --accountemail \"$L_MAIL\" --cert-file \"$cert_path.pem\" --key-file \"$cert_path.key\" --fullchain-file \"$cert_path.fullchain.pem\" --reloadcmd 'nginx -s reload'"
+                acme_cmd="$ACME_SH --issue --webroot \"$WEBROOT\" $acme_domains --server \"$L_ACME_SERVER\" --accountemail \"$L_MAIL\" --cert-file \"$cert_path.pem\" --key-file \"$cert_path.key\" --fullchain-file \"$cert_path.fullchain.pem\" --reloadcmd 'nginx -s reload' --cert-home /application/data/certs/acmesh/certs --config-home /application/data/certs/acmesh/config --ca-path /application/data/certs/acmesh/ca"
                 
                 # Add ECC and keylength parameters if ECC is enabled
                 if [ "$L_ECC" = "true" ]; then
@@ -435,14 +436,54 @@ EOF
     fi
 }
 
-# Function: Check directory permissions and create if needed
 check_directory() {
     local dir="$1"
-    local description="${32:-$dir}"
-    
-    if [ ! -w "$dir" ]; then
-        log "ERROR" "📂" "No write permissions for $description - aborting"
+    local description="${2:-$dir}"
+    local require_write="${3:-false}"    # boolean: true = require write permissions
+    local create_if_missing="${4:-false}" # only allowed/used if require_write=true
+
+    # create_if_missing is only permitted when write is required
+    if [ "$create_if_missing" = "true" ] && [ "$require_write" != "true" ]; then
+        log "WARN" "📂" "create_if_missing is only allowed when write is required; ignoring create flag for $description"
+        create_if_missing=false
+    fi
+
+    # Ensure existence (create only when allowed)
+    if [ ! -e "$dir" ]; then
+        if [ "$create_if_missing" = "true" ]; then
+            if ! mkdir -p "$dir" 2>/dev/null; then
+                log "ERROR" "📂" "Failed to create $description - aborting"
+                exit 1
+            fi
+        else
+            log "ERROR" "📂" "$description does not exist (creation disabled) - aborting"
+            exit 1
+        fi
+    fi
+
+    # Must be a directory
+    if [ ! -d "$dir" ]; then
+        log "ERROR" "📂" "$description exists but is not a directory - aborting"
         exit 1
+    fi
+
+    # Recursive permission checks for directory tree
+    if [ "$require_write" = "true" ]; then
+        # need write + execute on all directories to allow creating files/dirs
+        while IFS= read -r -d '' subdir; do
+            if [ ! -w "$subdir" ] || [ ! -x "$subdir" ]; then
+                log "ERROR" "📂" "No write/exec permissions for $description (problem at $subdir) - aborting"
+                exit 1
+            fi
+        done < <(find "$dir" -type d -print0 2>/dev/null)
+    else
+        # need read + execute on all directories to allow listing/traversal
+        while IFS= read -r -d '' subdir; do
+            if [ ! -r "$subdir" ] || [ ! -x "$subdir" ]; then
+                log "ERROR" "📂" "No read/exec permissions for $description (problem at $subdir) - aborting"
+                exit 1
+            fi
+        done < <(find "$dir" -type d -print0 2>/dev/null)
     fi
 }
 
@@ -457,24 +498,79 @@ check_file() {
     fi
 }
 
+# Kopiert Inhalt eines Verzeichnisses nach Ziel (erstellt Ziel falls nötig).
+# Bei Fehler wird eine Fehlermeldung geloggt und das Script mit Fehlercode beendet.
+copy_directory() {
+    local src="$1"
+    local dst="$2"
+    local description="${3:-$dst}"
+
+    if [ -z "$src" ] || [ -z "$dst" ]; then
+        log "ERROR" "📁" "copy_directory: Quelle und Ziel müssen angegeben werden" >&2
+        exit 1
+    fi
+
+    if [ ! -d "$src" ]; then
+        log "ERROR" "📁" "Quellverzeichnis nicht gefunden: $src" >&2
+        exit 1
+    fi
+
+    # Fehlerausgabe temporär sammeln
+    mkdir -p /application/tmp 2>/dev/null || true
+    local errlog="/application/tmp/copy_error.log"
+    : > "$errlog"
+
+    # Zielverzeichnis anlegen (falls noch nicht vorhanden)
+    if ! mkdir -p "$dst" 2>"$errlog"; then
+        log "ERROR" "📁" "Konnte Zielverzeichnis $description nicht erstellen: $dst" >&2
+        [ -s "$errlog" ] && log "ERROR" "📁" "Fehlerdetails: $(cat "$errlog")" >&2
+        exit 1
+    fi
+
+    # Inhalte kopieren (nur Inhalte, nicht das übergeordnete Verzeichnis selbst)
+    if cp -a "$src/." "$dst/" 2>"$errlog"; then
+        log "SUCCESS" "📁" "Erfolgreich kopiert: $src -> $dst"
+    else
+        log "ERROR" "📁" "Fehler beim Kopieren von $src nach $dst" >&2
+        [ -s "$errlog" ] && log "ERROR" "📁" "Fehlerdetails: $(cat "$errlog")" >&2
+        exit 1
+    fi
+}
+
 # Function: Setup log files and directories
 setup_environment() {
-    log "INFO" "📂" "Checking write permissions for required directories..."
+    log "INFO" "📂" "Preparing writable runtime directories..."
+
+    copy_directory "/application/data-fs" "/application/data" "Default data files"
     
-    # Check application directories
-    check_directory "/application/tmp" "/application/tmp"
-    check_directory "/application/data" "/application/data"
-    check_directory "/application/data/webdav" "WebDAV directory /application/data/webdav"
-    
-    # Check nginx runtime directories
-    check_directory "/var/run/nginx" "/var/run/nginx"
-    check_directory "/var/log/nginx" "/var/log/nginx"
-    check_directory "/var/lib/nginx" "/var/lib/nginx"
-    
-    # Check nginx PID file permissions
-    check_file "/var/run/nginx.pid" "nginx PID file /var/run/nginx.pid"
-    
-    log "SUCCESS" "📂" "All directory and file permissions verified successfully"
+    # Basis: temporäre und Laufzeitverzeichnisse unter /application
+    check_directory "/application/tmp" "Laufzeitverzeichnis /application/tmp" true true
+    check_directory "/application/run" "Laufzeitverzeichnis /application/run" true true
+
+    # Nginx Runtime-Unterordner (passen zu nginx.conf temp paths)
+    for d in nginx client_body_temp proxy_temp fastcgi_temp uwsgi_temp scgi_temp; do
+        check_directory "/application/run/$d" "Nginx Laufzeit-Unterordner /application/run/$d" true true
+    done
+
+    # Datenverzeichnisse
+    check_directory "/application/data/certs" "Zertifikatsverzeichnis /application/data/certs" true false
+    check_directory "/application/data/dhparams" "DH-Parameter-Verzeichnis /application/data/dhparams" true true
+    check_directory "/application/data/locations" "Locations-Verzeichnis /application/data/locations" false
+    check_directory "/application/data/logs" "Log Verzeichnis /application/data/sites-enabled" true true
+    check_directory "/application/data/passwords" "Passwort Verzeichnis /application/data/passwords" false
+    check_directory "/application/data/sites-enabled" "Sites-Enabled-Verzeichnis /application/data/sites-enabled" true true
+    check_directory "/application/data/streams" "Streams-Verzeichnis /application/data/streams" false
+    check_directory "/application/data/webdav" "Webdav-Verzeichnis /application/data/webroot" true true
+    check_directory "/application/data/webroot" "Webroot-Verzeichnis /application/data/webroot" false
+
+    # ACME Konfigurationsverzeichnis (wird via Volume gemountet)
+    check_directory "/application/data/certs/acmesh/config" "ACME Konfigurationsverzeichnis /application/data/acmesh/config" true true
+    check_directory "/application/data/certs/acmesh/certs" "ACME Zertifikatsverzeichnis /application/data/acmesh/certs" true true
+
+    # PID-Datei (neuer Pfad unter /application/run)
+    check_file "/application/run/nginx.pid" "nginx PID-Datei /application/run/nginx.pid"
+
+    log "SUCCESS" "📂" "Runtime directories ready"
 }
 
 # Function: Start services
