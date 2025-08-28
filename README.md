@@ -15,25 +15,6 @@
 
 ___A lightweight, pre-configured nginx container with HTTP/2, TLS 1.3 and SSL Labs A rating___
 
-## Table of contents
-
-- [What is nginx?](#what-is-nginx)
-- [Why would you use this image?](#why-would-you-use-this-image)
-- [Quick start](#quick-start)
-- [Example Usages](#example-usages)
-- [TLS/SSL modes and ACME](#tlsssl-modes-and-acme)
-- [Configuration options](#configuration-options)
-- [Logs](#logs)
-- [Better SSL Labs grade](#better-ssl-labs-grade)
-- [Disable TLS](#disable-tls)
-- [Security](#security)
-- [Image tags & architectures](#image-tags--architectures)
-- [Snippet catalog](#snippet-catalog)
-- [ACME notes](#acme-notes)
-- [Metrics & health](#metrics--health)
-- [Troubleshooting](#troubleshooting)
-- [Upgrade notes (older releases → 1.3.x)](#upgrade-notes-older-releases--13x)
-
 Current Version:
 [![](https://img.shields.io/docker/v/jschnabel/nginx/latest?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
 [![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
@@ -63,6 +44,25 @@ With this image you get a preconfigured nginx image with HTTP/2 and modern TLS d
 By default it runs HTTP on 8080 (TLS_MODE=off). To enable HTTPS, set TLS_MODE=custom (use your own certs) or TLS_MODE=acme (automatic Let’s Encrypt). In TLS modes a self‑signed cert is created only if no valid cert exists, so you have HTTPS immediately while ACME provisioning completes. The provided TLS snippets are tuned for an SSL Labs A rating.
 
 ![SSL Labs rating](./doc/image/ssllabs.png)
+
+## Table of contents
+
+- [What is nginx?](#what-is-nginx)
+- [Why would you use this image?](#why-would-you-use-this-image)
+- [Quick start](#quick-start)
+- [Example Usages](#example-usages)
+- [TLS/SSL modes and ACME](#tlsssl-modes-and-acme)
+- [Configuration options](#configuration-options)
+- [Logs](#logs)
+- [Better SSL Labs grade](#better-ssl-labs-grade)
+- [Disable TLS](#disable-tls)
+- [Security](#security)
+- [Image tags & architectures](#image-tags--architectures)
+- [Snippet catalog](#snippet-catalog)
+- [ACME notes](#acme-notes)
+- [Metrics & health](#metrics--health)
+- [Troubleshooting](#troubleshooting)
+- [Upgrade notes (older releases → 1.3.x)](#upgrade-notes-older-releases--13x)
 
 ## Quick start
 
