@@ -20,6 +20,29 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build local test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: docker-nginx-test:gha
+          cache-from: type=gha,scope=docker-nginx-test
+          cache-to: type=gha,mode=max,scope=docker-nginx-test
+      - name: Run integration tests (no ACME)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y curl
+          IMAGE=docker-nginx-test:gha bash tests/test_image.sh
   prepare:
     runs-on: ubuntu-latest
     outputs:
@@ -57,7 +80,7 @@ jobs:
           branch: ${{ steps.genVersions.outputs.BRANCH }}
           RELEASETYPE: ${{ steps.genVersions.outputs.RELEASETYPE }}
   docker:
-    needs: [prepare]
+    needs: [test, prepare]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
