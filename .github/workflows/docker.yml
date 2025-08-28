@@ -20,29 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build local test image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
-          load: true
-          tags: docker-nginx-test:gha
-          cache-from: type=gha,scope=docker-nginx-test
-          cache-to: type=gha,mode=max,scope=docker-nginx-test
-      - name: Run integration tests (no ACME)
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y curl
-          IMAGE=docker-nginx-test:gha bash tests/test_image.sh
   prepare:
     runs-on: ubuntu-latest
     outputs:
@@ -79,8 +56,61 @@ jobs:
           VERSION_MINOR: ${{ steps.genVersions.outputs.VERSION_MINOR }}
           branch: ${{ steps.genVersions.outputs.BRANCH }}
           RELEASETYPE: ${{ steps.genVersions.outputs.RELEASETYPE }}
+  test:
+    name: Test amd64 (no ACME)
+    needs: [prepare, docker]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Select image tag to test
+        id: image
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAGS="${{ needs.prepare.outputs.TAGS }}"
+          IMAGE_TAG=$(echo "$TAGS" | cut -d',' -f1)
+          echo "Testing image tag: $IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+      - name: Pull image (amd64)
+        run: |
+          docker pull --platform linux/amd64 ${{ steps.image.outputs.IMAGE_TAG }}
+      - name: Run container (TLS_MODE=off)
+        env:
+          TLS_MODE: off
+        run: |
+          docker run -d --rm \
+            -e TLS_MODE=${TLS_MODE} \
+            --platform linux/amd64 \
+            -p 18080:8080 \
+            -p 14444:4444 \
+            --name nginx-ci \
+            ${{ steps.image.outputs.IMAGE_TAG }}
+      - name: Wait for health endpoint
+        run: |
+          for i in {1..60}; do \
+            if curl -fsS http://127.0.0.1:14444/health >/dev/null; then echo "healthy"; exit 0; fi; \
+            sleep 1; \
+          done; \
+          echo "Service did not become healthy in time" >&2; \
+          docker logs nginx-ci || true; \
+          exit 1
+      - name: Check welcome page (HTTP)
+        run: |
+          curl -fsS http://127.0.0.1:18080/ | grep -q "Welcome to your website"
+      - name: Print logs on failure
+        if: failure()
+        run: |
+          docker ps -a || true
+          docker logs nginx-ci || true
+      - name: Stop container
+        if: always()
+        run: |
+          docker rm -f nginx-ci || true
   docker:
-    needs: [test, prepare]
+    needs: [prepare]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
