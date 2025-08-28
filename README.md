@@ -1,37 +1,35 @@
 # jschnabel/docker-nginx
 
 ![](https://img.shields.io/badge/base--image-alpine-blue?logo=docker&logoColor=white)
-[![](https://img.shields.io/docker/stars/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
+[![](https://img.shields.io/docker/stars/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx)
 [![](https://img.shields.io/badge/docker%20build-automated-blue?logo=docker&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/actions?query=workflow%3Adocker)
-[![](https://img.shields.io/docker/pulls/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx) 
-[![](https://img.shields.io/github/license/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/blob/main/LICENSE) 
+[![](https://img.shields.io/docker/pulls/jschnabel/nginx?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx)
+[![](https://img.shields.io/github/license/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/blob/main/LICENSE)
 [![](https://img.shields.io/github/issues/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/issues)
 
- ___A lightweight, pre-configured nginx container with HTTP 2.0, TLS1.3 and SSL Labs A rating___
+___A lightweight, pre-configured nginx container with HTTP/2, TLS 1.3 and SSL Labs A rating___
 
-Current Version: 
+Current Version:
 [![](https://img.shields.io/docker/v/jschnabel/nginx/latest?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
-[![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags) 
+[![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
 [![](https://img.shields.io/github/actions/workflow/status/joshua-schnabel/docker-nginx/docker.yml?branch=main)](https://github.com/joshua-schnabel/docker-nginx/actions?query=branch%3Amain+workflow%3Adocker)
 [![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/main?label=last%20change&logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/commits/main)
 
-
-Development Version: 
+Development Version:
 [![](https://img.shields.io/docker/v/jschnabel/nginx/latest-dev?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
-[![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest-dev?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags) 
+[![](https://img.shields.io/docker/image-size/jschnabel/nginx/latest-dev?logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
 [![](https://img.shields.io/github/actions/workflow/status/joshua-schnabel/docker-nginx/docker.yml?branch=dev)](https://github.com/joshua-schnabel/docker-nginx/actions?query=branch%3Adev+workflow%3Adocker)
 [![](https://img.shields.io/github/last-commit/joshua-schnabel/docker-nginx/dev?label=last%20change&logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/commits/dev)
 
-
- * Built on the lightweight and secure Alpine Linux distribution
- * Very small Docker image size (+/- 8MB)
- * Optimized for rapid delivery of static content and proxied content from downstream web applications.
- * Secure configuration with pre-configured, optimized TLS settings
- * Pre-defined DSGVO-compliant log rotation settings with 7-day retention of access logs.
+- Built on lightweight and secure Alpine Linux
+- Very small Docker image footprint
+- Optimized for static and reverse-proxied content
+- Secure TLS defaults (HTTP/2, TLS 1.3)
+- GDPR-friendly log rotation preconfigured
 
 ## What is nginx?
 
-> Nginx is a web server which can also be used as a reverse proxy, load balancer, mail proxy and HTTP cache. (_Wikipedia_)
+> Nginx is a web server which can also be used as a reverse proxy, load balancer, mail proxy and HTTP cache. (Wikipedia)
 
 ## Why would you use this image?
 
@@ -41,312 +39,341 @@ A secure TLS protected server is started without having to change the configurat
 
 ![SSL Labs rating](./doc/image/ssllabs.png)
 
-## Setup
+## Quick start
 
-The easiest way to start the server is the following command.
-
-```bash
-docker run -d -p 80:80 -p 443:443 jschnabel/nginx
-```
-
-You can also use docker-compose.
-
-```yml
-services:
-   nginx:
-     image: jschnabel/nginx
-     container_name: nginx
-     ports:
-       - 80:80
-       - 443:443
-```
-
-If now the IP address or domain is accessed with the browser, the test page should be visible.
-
-### Hosting some simple static content
-
-To be able to host your own content, just mount a directory under `/media/data/webroot`. 
-
-```yml
-services:
-   nginx:
-     image: jschnabel/nginx
-     container_name: nginx
-     ports:
-       - 80:80
-       - 443:443	 
-     volumes:
-       - /media/docker/volumes/nginx/webroot:/media/data/webroot
-```
-
-In this example all data from the host directory `/media/docker/volumes/nginx/webroot` will be published as content.
-
-### Custom SSL Certificate
-
-The configuration shown above will cause a warning window in all browsers. This is due to the self-signed certificate. 
-To get a free certificate from Let's Encrypt you have to do the following. First the certbot must be installed on the host. 
-Then a certificate can be created using the command below. Please make sure that a directory is mounted by the host as webroot.
-
-#### ACME.sh
+### Minimal HTTP and HTTPS:
 
 ```bash
-acme.sh --issue -d <your.domain> --cert-file /media/docker/volumes/nginx/webroot/cert.pem --key-file /media/docker/volumes/nginx/webroot/key.pem --fullchain-file /media/docker/volumes/nginx/webroot/fullchain.pem --reloadcmd "docker restart nginx"
+docker run -d \
+  -p 80:8080 \
+  -p 443:8443 \
+  jschnabel/nginx:latest
 ```
 
-The program will create the following files.
-
-```
-/media/docker/volumes/nginx/webroot/cert.pem 
-/media/docker/volumes/nginx/webroot/key.pem
-/media/docker/volumes/nginx/webroot/fullchain.pem
-```
-
-Now the certificate and the private key have to be mounted. 
+### With Compose:
 
 ```yml
 services:
-   nginx:
-     image: jschnabel/nginx
-     container_name: nginx
-     ports:
-       - 80:80
-       - 443:443	 
-     volumes:
-       - /media/docker/volumes/nginx/webroot:/media/data/webroot
-       - /etc/letsencrypt/live/<your.domain>/fullchain.pem:/media/data/certs/default_cert.pem:ro
-       - /etc/letsencrypt/live/<your.domain>/privkey.pem:/media/data/certs/default_key.pem:ro
+  nginx:
+    image: jschnabel/nginx:latest
+    container_name: nginx
+    ports:
+      - "80:8080"
+      - "443:8443"
 ```
 
-#### Certbot
+Open your IP/domain in a browser — you should see the test page.
 
-```bash
-certbot certonly --webroot --webroot-path /media/docker/volumes/nginx/webroot --rsa-key-size 4096 --renew-by-default -d <your.domain>
-```
+## Example Usages
 
-The program will create the following files.
-
-```
-/etc/letsencrypt/live/<your.domain>/fullchain.pem
-/etc/letsencrypt/live/<your.domain>/privkey.pem
-```
-
-Now the certificate and the private key have to be mounted. 
+### Serve static content
 
 ```yml
 services:
-   nginx:
-     image: jschnabel/nginx
-     container_name: nginx
-     ports:
-       - 80:80
-       - 443:443	 
-     volumes:
-       - /media/docker/volumes/nginx/webroot:/media/data/webroot
-       - /etc/letsencrypt/live/<your.domain>/fullchain.pem:/media/data/certs/default_cert.pem:ro
-       - /etc/letsencrypt/live/<your.domain>/privkey.pem:/media/data/certs/default_key.pem:ro
+  nginx:
+    image: jschnabel/nginx:latest
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - /media/docker/nginx/webroot:/application/data/webroot
 ```
 
+### Custom configurations
 
-### Custom Config
-
-In order to provide own configurations, these must be simply mounted under the directory `/media/data/sites-enabled`. 
-All configurations from this directory are activated. In this way several domains can be configured.
+All `.conf` files from `/application/data/sites-enabled` and `/application/data/streams` are loaded.
 
 ```yml
 services:
-   nginx:
-     image: jschnabel/nginx
-     container_name: nginx
-     ports:
-       - 80:80
-       - 443:443	 
-     volumes:
-       - /media/docker/volumes/nginx/webroot:/media/data/webroot
-       - /etc/letsencrypt/live/<your.domain>/fullchain.pem:/media/data/certs/default_cert.pem:ro
-       - /etc/letsencrypt/live/<your.domain>/privkey.pem:/media/data/certs/default_key.pem:ro
-       - /media/docker/volumes/nginx/sites:/media/data/sites-enabled
-       - /media/docker/volumes/nginx/streams:/media/data/streams
+  nginx:
+    image: jschnabel/nginx:latest
+    ports: ["80:8080", "443:8443"]
+    volumes:
+      - /media/docker/nginx/webroot:/application/data/webroot
+      - /media/docker/nginx/sites:/application/data/sites-enabled
+      - /media/docker/nginx/streams:/application/data/streams
 ```
 
-A custom site configuration could look like this. It should be mounted to `media/data/sites-enabled`.
+Example site (HTTP->HTTPS redirect + TLS):
 
 ```nginx
 server {
-	listen 80;
-	listen [::]:80;
-	server_name <your.domain>; 
-	
-	return 301 https://$host$request_uri;
+  listen 8080;
+  listen [::]:8080;
+  server_name <your.domain>;
+  return 301 https://$host$request_uri;
 }
 
 server {
-	listen 443 ssl http2;
-	listen [::]:443 ssl http2;
-	server_name <your.domain>; 
-	
-	ssl_certificate	 /media/data/certs/<your.domain>.pem;
-	ssl_certificate_key /media/data/certs/<your.domain>.pem;
+  listen 8443 ssl http2;
+  listen [::]:8443 ssl http2;
+  server_name <your.domain>;
 
-	include /media/data/snippets/gzip.conf;
-	include /media/data/snippets/header.conf;
-	include /media/data/snippets/tls.conf;
-	
-	location / {
-		root   /media/data/webroot/<your.domain>;
-		index  index.html index.htm;
-	}
+  ssl_certificate     /application/data/certs/<your.domain>.pem;
+  ssl_certificate_key /application/data/certs/<your.domain>.key;
 
-	error_page   500 502 503 504  /50x.html;
-	location = /50x.html {
-		root   /media/data/webroot/<your.domain>;
-	}
+  include /application/config/snippets/gzip.conf;
+  include /application/config/snippets/header.conf;
+  include /application/config/snippets/tls.conf;
+
+  location / {
+    root  /application/data/webroot/<your.domain>;
+    index index.html index.htm;
+    try_files $uri $uri/ $uri.html $uri.htm =404;
+  }
 }
 ```
 
-A custom stream configuration could look like this. It should be mounted to `media/data/streams`.
+Example stream:
 
-```
+```nginx
 stream {
-    upstream mqtt {
-         server mosquitto:1883;
-    }
+  upstream mqtt { server mosquitto:1883; }
 
-    server {
-        listen                8883 ssl;
-        proxy_pass            mqtt;
+  server {
+    listen 8883 ssl;
+    proxy_pass mqtt;
+    ssl_certificate     /application/data/certs/default_cert.pem;
+    ssl_certificate_key /application/data/certs/default_key.pem;
+    include /application/config/snippets/tls_stream.conf;
+  }
 
-        ssl_certificate  /media/data/certs/default_cert.pem;
-        ssl_certificate_key /media/data/certs/default_key.pem;
-
-        include /media/data/snippets/tls_stream.conf;
-    }
-
-    server {
-        listen                1883;
-        proxy_pass            mqtt;
-    }
-
+  server { listen 1883; proxy_pass mqtt; }
 }
 ```
 
-### Basic Auth
+### Authentication (Basic Auth)
 
-This image also includes a configuration for Basic-Auth authentication. This can be added as follows. 
-
-```
-	location / {
-		include /media/data/snippets/basic_auth.conf;
-		
-		root   /media/data/webroot/<your.domain>;
-		index  index.html index.htm;
-	}
-```
-
-To add a user, the following command can be used.
-
-```
-docker exec -it nginx_proxy /media/data/scripts/addUser.sh /media/data/passwords/htpasswd
-```
-
-### Webdav
-
-There is also a configuration for a WebDav share. It is recommended that such a share is secured by authentication. 
-
-```
-	location / {
-		include /media/data/snippets/basic_auth.conf;
-		include /media/data/snippets/webdav.conf;
-	}
-```
-
-### Log files
-
-The log files (error and access log) are stored under `/media/data/logs` by default. This directory can be mounted for external processing of the log files.
-
-### How to get a better SSL Labs Grade
-
-If you want a better grade at SSL Labs, the following things have to be done. 
-
-#### Key Exchange 100% 
-
-To get a 100% rating in the Key Exchange category it is necessary to use a 4096 bit RSA certificate or an ECDSA certificate with ECDSA P-384 or ECDSA P-521.
-
-With acme.sh you can create such a certificate with 4096 bit RSA if you add the following parameter to the command. 
-
-```bash
-acme.sh --issue --keylength 4096 ..."
-```
-
-To get an ECDSA P-384 certificate the command must be modified as follows. 
-
-```bash
-acme.sh --issue --ecc --keylength ec-384 ..."
-```
-
-Certbot currently does not support ECDSA certificates. However a 4096 bit RSA can be created. Therefore the key length has to be provided.
-
-```bash
-certbot certonly --rsa-key-size 4096 ...
-```
-
-![SSL Labs rating](./doc/image/ssllabs_cert.png)
-
-#### Cipher Strength 100%
-
-To get 100% in this discipline no cipher suites with 128bit are allowed in the list of cipher suites. A snippet is provided for this purpose. This snippet must be included as shown in the configuration below. 
-
-WARNING: This will prevent very old clients from accessing your website (e.g. Java <= 7 or Android <= 6). If you expect clients that fall into this category, I advise against using them.  
-
-A custom site configuration could look like this. It should be mounted to `media/data/sites-enabled`.
+Include the snippet and create a user:
 
 ```nginx
-server {
-	listen 80;
-	listen [::]:80;
-	server_name <your.domain>; 
-	
-	return 301 https://$host$request_uri;
-}
-
-server {
-	listen 443 ssl http2;
-	listen [::]:443 ssl http2;
-	server_name <your.domain>; 
-	
-	ssl_certificate	 /media/data/certs/<your.domain>.pem;
-	ssl_certificate_key /media/data/certs/<your.domain>.pem;
-
-	include /media/data/snippets/gzip.conf;
-	include /media/data/snippets/header.conf;
-	include /media/data/snippets/tls_strong.conf;
-	
-	location / {
-		root   /media/data/webroot/<your.domain>;
-		index  index.html index.htm;
-	}
-
-	error_page   500 502 503 504  /50x.html;
-	location = /50x.html {
-		root   /media/data/webroot/<your.domain>;
-	}
+location / {
+  include /application/config/snippets/basic_auth.conf;
+  root /application/data/webroot/<your.domain>;
+  index index.html index.htm;
 }
 ```
 
-![SSL Labs rating](./doc/image/ssllabs_strong.png)
+```bash
+docker exec -it nginx /application/config/scripts/addUser.sh /application/data/passwords/htpasswd
+```
 
-## How to disable TLS?
+### WebDAV
 
-Simply add an environment variable named `DISABLETLS` to the container. The value must be `true`.
+```nginx
+location / {
+  include /application/config/snippets/basic_auth.conf;
+  include /application/config/snippets/webdav.conf;
+}
+```
+
+### Reverse proxy example (with WebSocket)
+
+```nginx
+upstream app_backend { server app:3000; }
+
+server {
+  listen 8443 ssl http2;
+  server_name example.com;
+
+  ssl_certificate     /application/data/certs/example.com.pem;
+  ssl_certificate_key /application/data/certs/example.com.key;
+
+  include /application/config/snippets/tls.conf;
+  include /application/config/snippets/header.conf;
+
+  location /api/ {
+    proxy_pass http://app_backend;
+    include /application/config/snippets/proxy.conf;
+    include /application/config/snippets/proxy_websocket.conf;
+  }
+}
+```
+
+## TLS/SSL modes and ACME
+
+The entrypoint supports three modes (environment variables in parentheses):
+
+- Off: HTTP only (TLS_MODE=off)
+- Custom: use existing certificates under `/application/data/certs` (TLS_MODE=custom)
+- ACME: automatic certificates via Let’s Encrypt (TLS_MODE=acme)
+
+Additional variables for ACME/behavior:
+
+- FORCE_TLS=true|false — enforce HTTP→HTTPS redirect
+- ACME_MAIL=you@example.com — required for TLS_MODE=acme
+- ACME_SERVER=letsencrypt|… — ACME CA selection (default: letsencrypt)
+- ACME_ECC=true|false — ECDSA certificates (default: true)
+- ACME_KEYLENGTH=ec-256|ec-384|3072|4096 — key length (default: ec-384)
+- OUTPUT_FORMAT=human|json — entrypoint log format
+
+## Configuration options
+
+### Environment variables (runtime)
+
+| Variable        | Values                              | Default     | Required | Description                                      |
+|-----------------|-------------------------------------|-------------|----------|--------------------------------------------------|
+| TLS_MODE        | off, custom, acme                   | off         | No       | TLS mode (off=HTTP only; custom=use local certs; acme=Let’s Encrypt) |
+| FORCE_TLS       | true, false                         | false       | No       | Force HTTP→HTTPS redirect                        |
+| OUTPUT_FORMAT   | human, json                         | human       | No       | Entrypoint log format                            |
+| ACME_MAIL       | email address                       | —           | Yes (acme) | Account email for ACME                           |
+| ACME_SERVER     | letsencrypt, …                      | letsencrypt | No       | ACME CA server                                   |
+| ACME_ECC        | true, false                         | true        | No       | Use ECDSA (true) or RSA (false)                  |
+| ACME_KEYLENGTH  | ec-256, ec-384, 3072, 4096          | ec-384      | No       | Key length (use 3072/4096 for RSA)              |
+
+### Container ports
+
+| Port | Purpose                 | Expose externally |
+|------|-------------------------|-------------------|
+| 8080 | HTTP default server     | If needed         |
+| 8443 | HTTPS default server    | Yes               |
+| 4444 | Health/Metrics (internal)| No                |
+
+
+### Data directory layout (from data-fs → /application/data)
+
+On startup the container copies the initial skeleton from `/application/data-fs` into `/application/data`. Use the directories below for your persistent configuration and content.
+
+| Directory                               | What to put here / Purpose                                                                 |
+|-----------------------------------------|---------------------------------------------------------------------------------------------|
+| /application/data/certs                 | TLS certificates and private keys (`*.pem`, `*.key`). ACME-issued certs also land here. ACME state under `/application/data/certs/acmesh/{config,certs,ca}`. |
+| /application/data/dhparams              | Diffie-Hellman parameters (file `dhparam4096.dh` is auto-generated if missing).            |
+| /application/data/locations             | Optional per-site include snippets; defaults include this path in server blocks.          |
+| /application/data/logs                  | Nginx access/error logs (rotated by cron/logrotate).                                       |
+| /application/data/passwords             | Basic Auth files, e.g. `htpasswd` (managed by `/application/config/scripts/addUser.sh`).   |
+| /application/data/sites-enabled         | HTTP server blocks (`*.conf`) loaded by nginx.                                             |
+| /application/data/streams               | Stream (TCP) configs (`*.conf`) loaded by nginx.                                           |
+| /application/data/webdav                | Storage root when enabling the WebDAV snippet.                                             |
+| /application/data/webroot               | Static web content. ACME webroot challenges live under `/.well-known/acme-challenge/`.     |
+
+
+## Logs
+
+Access and error logs are under `/application/data/logs`. Logrotate is configured and runs via cron inside the container.
+
+## Better SSL Labs grade
+
+- 100% Key Exchange: choose RSA 4096 or ECDSA P-384 (ACME_ECC=true and ACME_KEYLENGTH=ec-384)
+- 100% Cipher Strength: include `tls_strong.conf` (warning: very old clients will be excluded)
+
+```nginx
+include /application/config/snippets/tls_strong.conf;
+```
+
+![SSL Labs rating](./doc/image/ssllabs.png)
+
+## Disable TLS
+
+Set `TLS_MODE=off` and optionally only publish port 80.
 
 ```yml
 services:
-   nginx:
-     image: jschnabel/nginx
-     container_name: nginx
-     environment:
-       - DISABLETLS="true"
-     ports:
-       - 80:80
-     volumes:
-       - /media/docker/volumes/nginx/webroot:/media/data/webroot
+  nginx:
+    image: jschnabel/nginx:latest
+    environment:
+      - TLS_MODE=off
+    ports:
+      - "80:8080"
 ```
+
+## Security
+
+This image is hardened by default (non-root user 1001, restricted paths). To run it as securely as possible:
+
+- Use a read-only root filesystem and only the tmpfs mounts required
+- Drop all Linux capabilities, add back only NET_BIND_SERVICE
+- Enable no-new-privileges
+- Expose only the ports you need — do not publish port 4444
+- Configure ulimits for nproc/nofile and cap log size
+
+Hardened docker-compose example:
+
+```yml
+services:
+  nginx:
+    image: jschnabel/nginx:latest
+    container_name: nginx-secure
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+      - "443:8443"
+    environment:
+      - TLS_MODE=acme
+      - FORCE_TLS=true
+      - ACME_MAIL=your-email@example.com
+      - ACME_SERVER=letsencrypt
+      - ACME_ECC=true
+      - ACME_KEYLENGTH=ec-384
+      - OUTPUT_FORMAT=human
+    volumes:
+      - ./data:/application/data:rw
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: ["ALL"]
+    cap_add: ["NET_BIND_SERVICE"]
+    read_only: true
+    tmpfs:
+      - /application/run:size=2M,uid=1001,gid=1001,mode=0770,noexec,nosuid,nodev
+      - /application/tmp:size=32M,uid=1001,gid=1001,mode=0770,noexec,nosuid,nodev
+      - /var/lib/nginx/logs:size=8M,uid=1001,gid=1001,mode=0755,noexec,nosuid,nodev
+      - /application/bin/acmesh/ca/:size=8M,uid=1001,gid=1001,mode=0755,noexec,nosuid,nodev
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+Tips:
+
+- Only mount `/application/data`; do not mount system paths
+- Put custom sites/streams under `/application/data/sites-enabled` and `/application/data/streams`
+- Sensitive files (keys) are restricted to user 1001 by default
+
+## Upgrade notes (older releases → 1.3.x)
+
+- Paths migrated from `/media/...` to `/application/...` — update volumes accordingly
+- Internal ports are 8080/8443 (instead of 80/443). Host ports remain freely mappable
+- ACME is integrated — legacy Certbot/standalone ACME instructions are optional
+
+## Image tags & architectures
+
+| Tag          | Purpose                | Branch | Architectures                         |
+|--------------|------------------------|--------|---------------------------------------|
+| latest       | Stable release         | main   | linux/amd64, linux/arm64, linux/arm/v7|
+| latest-dev   | Development snapshot   | dev    | linux/amd64, linux/arm64, linux/arm/v7|
+| versioned    | Pinned release (e.g. version-1.3.0) | tags | linux/amd64, linux/arm64, linux/arm/v7 |
+
+## Snippet catalog
+
+| Snippet                      | Use for                                        |
+|------------------------------|------------------------------------------------|
+| gzip.conf                    | Enable gzip for common types                   |
+| header.conf                  | Secure headers and server_tokens off           |
+| caching_map.conf             | Cache control mappings                         |
+| caching_header.conf          | Conditional caching headers                    |
+| ratelimit.conf               | Default request rate limiting                  |
+| ratelimit_high.conf          | Stricter request rate limiting                 |
+| proxy.conf                   | Reverse proxy defaults (timeouts, buffers)     |
+| proxy_websocket.conf         | WebSocket upgrade and proxy headers            |
+| fastcgi.conf                 | FastCGI defaults                               |
+| tls.conf                     | Modern TLS config (balanced compatibility)     |
+| tls_strong.conf              | Strong TLS ciphers only (drops legacy clients) |
+| tls_stream.conf              | TLS for stream{} servers                       |
+| tls_stream_strong.conf       | Strong TLS for stream{}                        |
+| webdav.conf                  | WebDAV locations and methods                   |
+| basic_auth.conf              | HTTP Basic authentication                      |
+
+
+## ACME notes
+
+- Uses HTTP-01 via webroot under `/application/data/webroot/<server_name>/.well-known/acme-challenge/`.
+- For testing rates/limits use the staging CA: `ACME_SERVER=letsencrypt_test`.
+- Certificates are grouped per server block by its `server_name` list. Use separate site files if you need different cert groupings.
+- Do not block `/.well-known/acme-challenge/` in custom locations.
+
