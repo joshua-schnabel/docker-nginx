@@ -498,41 +498,41 @@ check_file() {
     fi
 }
 
-# Kopiert Inhalt eines Verzeichnisses nach Ziel (erstellt Ziel falls nötig).
-# Bei Fehler wird eine Fehlermeldung geloggt und das Script mit Fehlercode beendet.
+# Copy the contents of a directory to a destination (creates destination if needed).
+# On error, logs a message and exits with a non-zero status.
 copy_directory() {
     local src="$1"
     local dst="$2"
     local description="${3:-$dst}"
 
     if [ -z "$src" ] || [ -z "$dst" ]; then
-        log "ERROR" "📁" "copy_directory: Quelle und Ziel müssen angegeben werden" >&2
+        log "ERROR" "📁" "copy_directory: Source and destination must be provided" >&2
         exit 1
     fi
 
     if [ ! -d "$src" ]; then
-        log "ERROR" "📁" "Quellverzeichnis nicht gefunden: $src" >&2
+        log "ERROR" "📁" "Source directory not found: $src" >&2
         exit 1
     fi
 
-    # Fehlerausgabe temporär sammeln
+    # Collect stderr temporarily
     mkdir -p /application/tmp 2>/dev/null || true
     local errlog="/application/tmp/copy_error.log"
     : > "$errlog"
 
-    # Zielverzeichnis anlegen (falls noch nicht vorhanden)
+    # Create destination directory (if not present)
     if ! mkdir -p "$dst" 2>"$errlog"; then
-        log "ERROR" "📁" "Konnte Zielverzeichnis $description nicht erstellen: $dst" >&2
-        [ -s "$errlog" ] && log "ERROR" "📁" "Fehlerdetails: $(cat "$errlog")" >&2
+        log "ERROR" "📁" "Could not create target directory $description: $dst" >&2
+        [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
         exit 1
     fi
 
-    # Inhalte kopieren (nur Inhalte, nicht das übergeordnete Verzeichnis selbst)
+    # Copy contents (only inner files/dirs, not the parent directory itself)
     if cp -a "$src/." "$dst/" 2>"$errlog"; then
-        log "SUCCESS" "📁" "Erfolgreich kopiert: $src -> $dst"
+        log "SUCCESS" "📁" "Successfully copied: $src -> $dst"
     else
-        log "ERROR" "📁" "Fehler beim Kopieren von $src nach $dst" >&2
-        [ -s "$errlog" ] && log "ERROR" "📁" "Fehlerdetails: $(cat "$errlog")" >&2
+        log "ERROR" "📁" "Error copying from $src to $dst" >&2
+        [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
         exit 1
     fi
 }
@@ -543,32 +543,32 @@ setup_environment() {
 
     copy_directory "/application/data-fs" "/application/data" "Default data files"
     
-    # Basis: temporäre und Laufzeitverzeichnisse unter /application
-    check_directory "/application/tmp" "Laufzeitverzeichnis /application/tmp" true true
-    check_directory "/application/run" "Laufzeitverzeichnis /application/run" true true
+    # Base: temporary and runtime directories under /application
+    check_directory "/application/tmp" "Runtime directory /application/tmp" true true
+    check_directory "/application/run" "Runtime directory /application/run" true true
 
-    # Nginx Runtime-Unterordner (passen zu nginx.conf temp paths)
+    # Nginx runtime subdirectories (matching nginx.conf temp paths)
     for d in nginx client_body_temp proxy_temp fastcgi_temp uwsgi_temp scgi_temp; do
-        check_directory "/application/run/$d" "Nginx Laufzeit-Unterordner /application/run/$d" true true
+        check_directory "/application/run/$d" "Nginx runtime subdirectory /application/run/$d" true true
     done
 
-    # Datenverzeichnisse
-    check_directory "/application/data/certs" "Zertifikatsverzeichnis /application/data/certs" true false
-    check_directory "/application/data/dhparams" "DH-Parameter-Verzeichnis /application/data/dhparams" true true
-    check_directory "/application/data/locations" "Locations-Verzeichnis /application/data/locations" false
-    check_directory "/application/data/logs" "Log Verzeichnis /application/data/sites-enabled" true true
-    check_directory "/application/data/passwords" "Passwort Verzeichnis /application/data/passwords" false
-    check_directory "/application/data/sites-enabled" "Sites-Enabled-Verzeichnis /application/data/sites-enabled" true true
-    check_directory "/application/data/streams" "Streams-Verzeichnis /application/data/streams" false
-    check_directory "/application/data/webdav" "Webdav-Verzeichnis /application/data/webroot" true true
-    check_directory "/application/data/webroot" "Webroot-Verzeichnis /application/data/webroot" false
+    # Data directories
+    check_directory "/application/data/certs" "Certificates directory /application/data/certs" true false
+    check_directory "/application/data/dhparams" "DH parameters directory /application/data/dhparams" true true
+    check_directory "/application/data/locations" "Locations directory /application/data/locations" false
+    check_directory "/application/data/logs" "Logs directory /application/data/logs" true true
+    check_directory "/application/data/passwords" "Passwords directory /application/data/passwords" false
+    check_directory "/application/data/sites-enabled" "Sites enabled directory /application/data/sites-enabled" true true
+    check_directory "/application/data/streams" "Streams directory /application/data/streams" false
+    check_directory "/application/data/webdav" "WebDAV directory /application/data/webdav" true true
+    check_directory "/application/data/webroot" "Webroot directory /application/data/webroot" false
 
-    # ACME Konfigurationsverzeichnis (wird via Volume gemountet)
-    check_directory "/application/data/certs/acmesh/config" "ACME Konfigurationsverzeichnis /application/data/acmesh/config" true true
-    check_directory "/application/data/certs/acmesh/certs" "ACME Zertifikatsverzeichnis /application/data/acmesh/certs" true true
+    # ACME configuration directories (mounted via volume)
+    check_directory "/application/data/certs/acmesh/config" "ACME config directory /application/data/certs/acmesh/config" true true
+    check_directory "/application/data/certs/acmesh/certs" "ACME certs directory /application/data/certs/acmesh/certs" true true
 
-    # PID-Datei (neuer Pfad unter /application/run)
-    check_file "/application/run/nginx.pid" "nginx PID-Datei /application/run/nginx.pid"
+    # PID file (new path under /application/run)
+    check_file "/application/run/nginx.pid" "nginx PID file /application/run/nginx.pid"
 
     log "SUCCESS" "📂" "Runtime directories ready"
 }
