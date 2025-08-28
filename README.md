@@ -7,7 +7,32 @@
 [![](https://img.shields.io/github/license/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/blob/main/LICENSE)
 [![](https://img.shields.io/github/issues/joshua-schnabel/docker-nginx?logo=github&logoColor=white)](https://github.com/joshua-schnabel/docker-nginx/issues)
 
+[![Quick start](https://img.shields.io/badge/docs-Quick%20start-blue)](#quick-start)
+[![Configuration](https://img.shields.io/badge/docs-Configuration-blue)](#configuration-options)
+[![Security](https://img.shields.io/badge/docs-Security-blue)](#security)
+[![ACME](https://img.shields.io/badge/docs-ACME-blue)](#acme-notes)
+[![Troubleshooting](https://img.shields.io/badge/docs-Troubleshooting-blue)](#troubleshooting)
+
 ___A lightweight, pre-configured nginx container with HTTP/2, TLS 1.3 and SSL Labs A rating___
+
+## Table of contents
+
+- [What is nginx?](#what-is-nginx)
+- [Why would you use this image?](#why-would-you-use-this-image)
+- [Quick start](#quick-start)
+- [Example Usages](#example-usages)
+- [TLS/SSL modes and ACME](#tlsssl-modes-and-acme)
+- [Configuration options](#configuration-options)
+- [Logs](#logs)
+- [Better SSL Labs grade](#better-ssl-labs-grade)
+- [Disable TLS](#disable-tls)
+- [Security](#security)
+- [Image tags & architectures](#image-tags--architectures)
+- [Snippet catalog](#snippet-catalog)
+- [ACME notes](#acme-notes)
+- [Metrics & health](#metrics--health)
+- [Troubleshooting](#troubleshooting)
+- [Upgrade notes (older releases → 1.3.x)](#upgrade-notes-older-releases--13x)
 
 Current Version:
 [![](https://img.shields.io/docker/v/jschnabel/nginx/latest?color=yellow&logo=docker&logoColor=white)](https://hub.docker.com/r/jschnabel/nginx/tags)
@@ -33,9 +58,9 @@ Development Version:
 
 ## Why would you use this image?
 
-With this image you get a preconfigured nginx image. This image provides support for TLS 1.3 and HTTP 2.0. 
+With this image you get a preconfigured nginx image with HTTP/2 and modern TLS defaults.
 
-A secure TLS protected server is started without having to change the configuration. A self-signed certificate is created for this purpose. SSL Labs rates the configuration with an A.
+By default it runs HTTP on 8080 (TLS_MODE=off). To enable HTTPS, set TLS_MODE=custom (use your own certs) or TLS_MODE=acme (automatic Let’s Encrypt). In TLS modes a self‑signed cert is created only if no valid cert exists, so you have HTTPS immediately while ACME provisioning completes. The provided TLS snippets are tuned for an SSL Labs A rating.
 
 ![SSL Labs rating](./doc/image/ssllabs.png)
 
@@ -76,7 +101,7 @@ services:
       - "80:8080"
       - "443:8443"
     volumes:
-      - /media/docker/nginx/webroot:/application/data/webroot
+      - ./nginx/webroot:/application/data/webroot
 ```
 
 ### Custom configurations
@@ -89,9 +114,9 @@ services:
     image: jschnabel/nginx:latest
     ports: ["80:8080", "443:8443"]
     volumes:
-      - /media/docker/nginx/webroot:/application/data/webroot
-      - /media/docker/nginx/sites:/application/data/sites-enabled
-      - /media/docker/nginx/streams:/application/data/streams
+      - ./nginx/webroot:/application/data/webroot
+      - ./nginx/sites:/application/data/sites-enabled
+      - ./nginx/streams:/application/data/streams
 ```
 
 Example site (HTTP->HTTPS redirect + TLS):
@@ -189,24 +214,6 @@ server {
   }
 }
 ```
-
-## TLS/SSL modes and ACME
-
-The entrypoint supports three modes (environment variables in parentheses):
-
-- Off: HTTP only (TLS_MODE=off)
-- Custom: use existing certificates under `/application/data/certs` (TLS_MODE=custom)
-- ACME: automatic certificates via Let’s Encrypt (TLS_MODE=acme)
-
-Additional variables for ACME/behavior:
-
-- FORCE_TLS=true|false — enforce HTTP→HTTPS redirect
-- ACME_MAIL=you@example.com — required for TLS_MODE=acme
-- ACME_SERVER=letsencrypt|… — ACME CA selection (default: letsencrypt)
-- ACME_ECC=true|false — ECDSA certificates (default: true)
-- ACME_KEYLENGTH=ec-256|ec-384|3072|4096 — key length (default: ec-384)
-- OUTPUT_FORMAT=human|json — entrypoint log format
-
 ## Configuration options
 
 ### Environment variables (runtime)
@@ -285,6 +292,11 @@ This image is hardened by default (non-root user 1001, restricted paths). To run
 - Enable no-new-privileges
 - Expose only the ports you need — do not publish port 4444
 - Configure ulimits for nproc/nofile and cap log size
+
+Container user & permissions:
+
+- Runs as non-root user/group 1001 (www-data). Ensure mounted host paths are writable by UID/GID 1001.
+- Files created use a secure umask 027 (e.g., keys 600/640).
 
 Hardened docker-compose example:
 
@@ -376,4 +388,19 @@ Tips:
 - For testing rates/limits use the staging CA: `ACME_SERVER=letsencrypt_test`.
 - Certificates are grouped per server block by its `server_name` list. Use separate site files if you need different cert groupings.
 - Do not block `/.well-known/acme-challenge/` in custom locations.
+
+## Metrics & health
+
+- Health endpoint (used by HEALTHCHECK): `GET http://127.0.0.1:4444/health`
+- Prometheus metrics (internal): `http://<container>:4444/metrics`
+- Nginx stub status (internal): `http://<container>:4444/nginx_status`
+
+Example Prometheus scrape job:
+
+```yaml
+scrape_configs:
+  - job_name: nginx
+    static_configs:
+      - targets: ["nginx:4444"]
+```
 
