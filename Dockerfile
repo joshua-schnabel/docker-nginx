@@ -20,8 +20,17 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.schema-version="1.0" \
       Maintainer="Joshua Schnabel <dev@joshua-schnabel.de>" \
       Description="Lightweight Nginx container." \
-	  alpine-version=${ALPINEVERSION} \
-      nginx-version=$VENDORVERSION
+	    alpine-version=${ALPINEVERSION} \
+      nginx-version=$VENDORVERSION \
+      org.opencontainers.image.title="jschnabel/nginx" \
+      org.opencontainers.image.description="Lightweight Nginx container" \
+      org.opencontainers.image.url="https://joshua-schnabel.de" \
+      org.opencontainers.image.source="https://github.com/joshua-schnabel/docker-nginx" \
+      org.opencontainers.image.version=$VERSION \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.vendor="Joshua Schnabel" \
+      org.opencontainers.image.base.name="alpine:${ALPINEVERSION}"
 
 # Statische Konfigurationen früher kopieren (ändern selten)
 COPY --chown=root:root ./nginx /etc/nginx/
