@@ -524,28 +524,31 @@ copy_directory() {
 
     # Merge mode: copy without overwriting existing files; Replace mode: wipe destination content first
     if [ "$no_overwrite" = "true" ]; then
-        # Pre-create all directories from src in dst so empty folders are preserved
+        # 1) Create all directories so empty folders are preserved
         if ! find "$src" -type d -print0 2>>"$errlog" | while IFS= read -r -d '' d; do
-            # Compute relative path
             rel="${d#$src/}"
-            # Skip the root of src
-            if [ -z "$rel" ] || [ "$d" = "$src" ]; then
-                continue
-            fi
+            [ -z "$rel" ] && continue
             mkdir -p "$dst/$rel" 2>>"$errlog" || exit 1
         done; then
             log "ERROR" "📁" "Error creating directory structure in $dst from $src" >&2
             [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
             exit 1
         fi
-        # Copy contents (only inner files/dirs, not the parent directory itself) without clobbering
-        if cp -an "$src/." "$dst/" 2>"$errlog"; then
-            log "SUCCESS" "📁" "Merged defaults without overwriting: $src -> $dst"
-        else
-            log "ERROR" "📁" "Error merging from $src to $dst" >&2
+
+        # 2) Copy only missing files and symlinks, preserve attributes
+        if ! find "$src" \( -type f -o -type l \) -print0 2>>"$errlog" | while IFS= read -r -d '' f; do
+            rel="${f#$src/}"
+            dest="$dst/$rel"
+            if [ ! -e "$dest" ]; then
+                mkdir -p "$(dirname "$dest")" 2>>"$errlog" || exit 1
+                cp -a "$f" "$dest" 2>>"$errlog" || exit 1
+            fi
+        done; then
+            log "ERROR" "📁" "Error merging files from $src to $dst" >&2
             [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
             exit 1
         fi
+        log "SUCCESS" "📁" "Merged defaults without overwriting: $src -> $dst"
     else
         # Replace mode: remove existing contents safely, then copy fresh
         # Safety guard: refuse to operate on root
