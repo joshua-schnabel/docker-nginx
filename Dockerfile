@@ -58,7 +58,7 @@ RUN set -eux; \
     addgroup -S -g 1001 www-data; \
     adduser -D -S -G www-data -u 1001 -h /application/data/certs/acmesh -s /bin/false www-data; \
     # App-Verzeichnisse (nur unter /application)
-    mkdir -p /application/run /application/data/certs /application/data/logs /application/data/dhparams /application/data/sites-enabled /application/data/webroot /application/data/streams; \
+    mkdir -p /application/data/ /application/run /application/data/certs /application/data/logs /application/data/dhparams /application/data/sites-enabled /application/data/webroot /application/data/streams; \
     # Logdateien
     touch /application/data/logs/access.log /application/data/logs/error.log /application/data/logs/access.1.log /application/data/logs/error.1.log; \
     chown -R www-data:www-data /application; \

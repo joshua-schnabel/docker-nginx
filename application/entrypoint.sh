@@ -442,12 +442,6 @@ check_directory() {
     local require_write="${3:-false}"    # boolean: true = require write permissions
     local create_if_missing="${4:-false}" # only allowed/used if require_write=true
 
-    # create_if_missing is only permitted when write is required
-    if [ "$create_if_missing" = "true" ] && [ "$require_write" != "true" ]; then
-        log "WARN" "📂" "create_if_missing is only allowed when write is required; ignoring create flag for $description"
-        create_if_missing=false
-    fi
-
     # Ensure existence (create only when allowed)
     if [ ! -e "$dir" ]; then
         if [ "$create_if_missing" = "true" ]; then
@@ -528,23 +522,49 @@ copy_directory() {
         exit 1
     fi
 
-    # Choose cp options: -a (archive). Add -n to avoid overwriting existing files when requested
-    local cp_opts="-a"
+    # Merge mode: copy without overwriting existing files; Replace mode: wipe destination content first
     if [ "$no_overwrite" = "true" ]; then
-        cp_opts="-an"
-    fi
-
-    # Copy contents (only inner files/dirs, not the parent directory itself)
-    if cp $cp_opts "$src/." "$dst/" 2>"$errlog"; then
-        if [ "$no_overwrite" = "true" ]; then
+        # Pre-create all directories from src in dst so empty folders are preserved
+        if ! find "$src" -type d -print0 2>>"$errlog" | while IFS= read -r -d '' d; do
+            # Compute relative path
+            rel="${d#$src/}"
+            # Skip the root of src
+            if [ -z "$rel" ] || [ "$d" = "$src" ]; then
+                continue
+            fi
+            mkdir -p "$dst/$rel" 2>>"$errlog" || exit 1
+        done; then
+            log "ERROR" "📁" "Error creating directory structure in $dst from $src" >&2
+            [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
+            exit 1
+        fi
+        # Copy contents (only inner files/dirs, not the parent directory itself) without clobbering
+        if cp -an "$src/." "$dst/" 2>"$errlog"; then
             log "SUCCESS" "📁" "Merged defaults without overwriting: $src -> $dst"
         else
-            log "SUCCESS" "📁" "Successfully copied: $src -> $dst"
+            log "ERROR" "📁" "Error merging from $src to $dst" >&2
+            [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
+            exit 1
         fi
     else
-        log "ERROR" "📁" "Error copying from $src to $dst" >&2
-        [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
-        exit 1
+        # Replace mode: remove existing contents safely, then copy fresh
+        # Safety guard: refuse to operate on root
+        if [ "$dst" = "/" ] || [ -z "$dst" ]; then
+            log "ERROR" "📁" "Refusing to wipe destination '$dst' (unsafe)" >&2
+            exit 1
+        fi
+        if ! find "$dst" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} + 2>"$errlog"; then
+            log "ERROR" "📁" "Failed to clear destination directory: $dst" >&2
+            [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
+            exit 1
+        fi
+        if cp -a "$src/." "$dst/" 2>"$errlog"; then
+            log "SUCCESS" "📁" "Replaced contents: $src -> $dst"
+        else
+            log "ERROR" "📁" "Error copying from $src to $dst" >&2
+            [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
+            exit 1
+        fi
     fi
 }
 
@@ -569,7 +589,7 @@ setup_environment() {
     # Data directories
     check_directory "/application/data/certs" "Certificates directory /application/data/certs" true false
     check_directory "/application/data/dhparams" "DH parameters directory /application/data/dhparams" true true
-    check_directory "/application/data/locations" "Locations directory /application/data/locations" false
+    check_directory "/application/data/locations" "Locations directory /application/data/locations" false true
     check_directory "/application/data/logs" "Logs directory /application/data/logs" true true
     check_directory "/application/data/passwords" "Passwords directory /application/data/passwords" false
     check_directory "/application/data/sites-enabled" "Sites enabled directory /application/data/sites-enabled" true true
