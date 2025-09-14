@@ -504,6 +504,7 @@ copy_directory() {
     local src="$1"
     local dst="$2"
     local description="${3:-$dst}"
+    local no_overwrite="${4:-false}"  # when true, do not overwrite existing files (merge only)
 
     if [ -z "$src" ] || [ -z "$dst" ]; then
         log "ERROR" "📁" "copy_directory: Source and destination must be provided" >&2
@@ -527,9 +528,19 @@ copy_directory() {
         exit 1
     fi
 
+    # Choose cp options: -a (archive). Add -n to avoid overwriting existing files when requested
+    local cp_opts="-a"
+    if [ "$no_overwrite" = "true" ]; then
+        cp_opts="-an"
+    fi
+
     # Copy contents (only inner files/dirs, not the parent directory itself)
-    if cp -a "$src/." "$dst/" 2>"$errlog"; then
-        log "SUCCESS" "📁" "Successfully copied: $src -> $dst"
+    if cp $cp_opts "$src/." "$dst/" 2>"$errlog"; then
+        if [ "$no_overwrite" = "true" ]; then
+            log "SUCCESS" "📁" "Merged defaults without overwriting: $src -> $dst"
+        else
+            log "SUCCESS" "📁" "Successfully copied: $src -> $dst"
+        fi
     else
         log "ERROR" "📁" "Error copying from $src to $dst" >&2
         [ -s "$errlog" ] && log "ERROR" "📁" "Error details: $(cat "$errlog")" >&2
@@ -541,7 +552,10 @@ copy_directory() {
 setup_environment() {
     log "INFO" "📂" "Preparing writable runtime directories..."
 
-    copy_directory "/application/data-fs" "/application/data" "Default data files"
+    check_directory "/application/data" "Data directory /application/data" true true
+
+    # Merge defaults into /application/data but keep any existing user data intact
+    copy_directory "/application/data-fs" "/application/data" "Default data files" true
     
     # Base: temporary and runtime directories under /application
     check_directory "/application/tmp" "Runtime directory /application/tmp" true true

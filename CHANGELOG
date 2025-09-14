@@ -1,3 +1,7 @@
+1.3.1
+ - Fix Bug when /application/data is not writable
+ - Fix Bug in proxy application/config/snippets/proxy_websocket.conf
+
 1.3.0
  - Restructure directory layout (moved from media to application folder)
  - Added Prometheus metrics support with Lua modules
