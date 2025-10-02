@@ -19,6 +19,8 @@ L_ACME_SERVER="${ACME_SERVER:-letsencrypt}"
 L_ECC="${ACME_ECC:-true}"
 L_KEYLENGTH="${ACME_KEYLENGTH:-ec-384}"
 L_OUTPUT_FORMAT="${OUTPUT_FORMAT:-human}"
+L_ACME_DEBUG="${ACME_DEBUG:-false}"  # Enable acme.sh debug output when true
+L_ACME_CA_BUNDLE="${ACME_CA_BUNDLE:-}"  # Optional custom CA bundle file path for acme.sh
 
 L_COMMAND=("$@")
 
@@ -78,6 +80,19 @@ if [[ ! "$L_KEYLENGTH" =~ ^(ec-256|ec-384|3072|4096)$ ]]; then
     exit 1
 fi
 
+if [[ ! "$L_ACME_DEBUG" =~ ^(true|false)$ ]]; then
+    log "ERROR" "🔧" "Invalid ACME_DEBUG: $L_ACME_DEBUG. Must be: true or false" >&2
+    exit 1
+fi
+
+# Validate optional CA bundle path if provided (must exist and be a regular file)
+if [ -n "$L_ACME_CA_BUNDLE" ]; then
+    if [ ! -f "$L_ACME_CA_BUNDLE" ]; then
+        log "ERROR" "🔧" "ACME_CA_BUNDLE file not found: $L_ACME_CA_BUNDLE" >&2
+        exit 1
+    fi
+fi
+
 # ACME specific validation
 if [ "$L_TLS_MODE" = "acme" ] && { [ -z "$L_MAIL" ] || [ "$L_MAIL" = "false" ]; }; then
     log "ERROR" "🔧" "ACME_MAIL is required when TLS_MODE=acme" >&2
@@ -108,7 +123,10 @@ fi
 
 log "INFO" "📋" "Nginx version: ${nginxlocal} | Container version: ${containerv}"
 
-log "INFO" "🔧" "TLS_MODE: $L_TLS_MODE | FORCE_TLS: $L_FORCE_TLS"
+log "INFO" "🔧" "TLS_MODE: $L_TLS_MODE | FORCE_TLS: $L_FORCE_TLS | ACME_DEBUG: $L_ACME_DEBUG"
+if [ -n "$L_ACME_CA_BUNDLE" ]; then
+    log "INFO" "🔧" "ACME_CA_BUNDLE: $L_ACME_CA_BUNDLE"
+fi
 
 # Function: Copy configuration files
 copy_nginx_configs() {
@@ -382,6 +400,16 @@ EOF
                 
                 # Build acme.sh command with configurable parameters
                 acme_cmd="$ACME_SH --issue --webroot \"$WEBROOT\" $acme_domains --server \"$L_ACME_SERVER\" --accountemail \"$L_MAIL\" --cert-file \"$cert_path.pem\" --key-file \"$cert_path.key\" --fullchain-file \"$cert_path.fullchain.pem\" --reloadcmd 'nginx -s reload' --cert-home /application/data/certs/acmesh/certs --config-home /application/data/certs/acmesh/config --ca-path /application/data/certs/acmesh/ca"
+
+                # Optional custom CA bundle
+                if [ -n "$L_ACME_CA_BUNDLE" ]; then
+                    acme_cmd="$acme_cmd --ca-bundle \"$L_ACME_CA_BUNDLE\""
+                fi
+
+                # Add debug flag if enabled
+                if [ "$L_ACME_DEBUG" = "true" ]; then
+                    acme_cmd="$acme_cmd --debug 2"
+                fi
                 
                 # Add ECC and keylength parameters if ECC is enabled
                 if [ "$L_ECC" = "true" ]; then
