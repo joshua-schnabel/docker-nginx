@@ -321,6 +321,19 @@ handle_acme_certificates() {
         fi
         
         log "INFO" "🚀" "Starting ACME certificate process"
+
+        # Prepare (hash) CA directory (concise, openssl only)
+        CA_STORE_DIR="/application/data/certs/acmesh/ca"
+        mkdir -p "$CA_STORE_DIR"
+        if ! openssl rehash "$CA_STORE_DIR" >/dev/null 2>/application/tmp/ca_rehash_error.log; then
+            if [ -s /application/tmp/ca_rehash_error.log ]; then
+                log "WARN" "🔧" "CA store rehash failed (continuing): $(head -c 160 /application/tmp/ca_rehash_error.log)"
+            else
+                log "WARN" "🔧" "CA store rehash failed (continuing)"
+            fi
+        else
+            log "INFO" "🔧" "CA store hashed: $CA_STORE_DIR"
+        fi
         
         # 1. Check and add location block in all configs
         for conf in "$L_SITESENABLED_DIR"*.conf; do

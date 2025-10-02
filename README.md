@@ -217,17 +217,15 @@ server {
 
 ### Environment variables (runtime)
 
-| Variable        | Values                              | Default     | Required    | Description                                                   |
-|-----------------|-------------------------------------|-------------|-------------|---------------------------------------------------------------|
-| TLS_MODE        | off, custom, acme                   | off         | No          | TLS mode (off=HTTP only; custom=use local certs; acme=Let’s Encrypt) |
-| FORCE_TLS       | true, false                         | false       | No          | Force HTTP→HTTPS redirect                                     |
-| OUTPUT_FORMAT   | human, json                         | human       | No          | Entrypoint log format                                         |
-| ACME_MAIL       | email address                       | —           | Yes (acme)  | Account email for ACME                                        |
-| ACME_SERVER     | letsencrypt, …                      | letsencrypt | No          | ACME CA server                                                 |
-| ACME_ECC        | true, false                         | true        | No          | Use ECDSA (true) or RSA (false)                               |
-| ACME_KEYLENGTH  | ec-256, ec-384, 3072, 4096          | ec-384      | No          | Key length (use 3072/4096 for RSA)                             |
-| ACME_DEBUG      | true, false                         | false       | No          | Enable verbose `acme.sh` output (`--debug 2`) for troubleshooting |
-| ACME_CA_BUNDLE  | path to file                        | (empty)     | No          | Custom CA bundle file passed to `acme.sh --ca-bundle` (must exist) |
+| Variable        | Values                              | Default     | Required | Description                                      |
+|-----------------|-------------------------------------|-------------|----------|--------------------------------------------------|
+| TLS_MODE        | off, custom, acme                   | off         | No       | TLS mode (off=HTTP only; custom=use local certs; acme=Let’s Encrypt) |
+| FORCE_TLS       | true, false                         | false       | No       | Force HTTP→HTTPS redirect                        |
+| OUTPUT_FORMAT   | human, json                         | human       | No       | Entrypoint log format                            |
+| ACME_MAIL       | email address                       | —           | Yes (acme) | Account email for ACME                           |
+| ACME_SERVER     | letsencrypt, …                      | letsencrypt | No       | ACME CA server                                   |
+| ACME_ECC        | true, false                         | true        | No       | Use ECDSA (true) or RSA (false)                  |
+| ACME_KEYLENGTH  | ec-256, ec-384, 3072, 4096          | ec-384      | No       | Key length (use 3072/4096 for RSA)              |
 
 ### Container ports
 
@@ -389,8 +387,6 @@ Tips:
 - For testing rates/limits use the staging CA: `ACME_SERVER=letsencrypt_test`.
 - Certificates are grouped per server block by its `server_name` list. Use separate site files if you need different cert groupings.
 - Do not block `/.well-known/acme-challenge/` in custom locations.
-- Set `ACME_DEBUG=true` to add detailed `acme.sh` debug logs (disabled by default).
-- Provide a corporate / custom root store with `ACME_CA_BUNDLE=/application/data/certs/custom-ca.pem` (file must exist) when the default trust store cannot validate the ACME endpoint (e.g. behind TLS intercepting proxy).
 
 ## Metrics & health
 
