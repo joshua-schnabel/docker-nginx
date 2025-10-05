@@ -41,7 +41,7 @@ Development Version:
 
 With this image you get a preconfigured nginx image with HTTP/2 and modern TLS defaults.
 
-By default it runs HTTP on 8080 (TLS_MODE=off). To enable HTTPS, set TLS_MODE=custom (use your own certs) or TLS_MODE=acme (automatic Let’s Encrypt). In TLS modes a self‑signed cert is created only if no valid cert exists, so you have HTTPS immediately while ACME provisioning completes. The provided TLS snippets are tuned for an SSL Labs A rating.
+By default it runs HTTP on 8080 (TLS_MODE=off). To enable HTTPS, set TLS_MODE=custom (use your own certs) or TLS_MODE=acme (automatic Let’s Encrypt). In TLS modes a self‑signed cert is created only if no valid cert exists, so you have HTTPS immediately while ACME provisioning completes. Existing certs are renewed automatically when they are self-signed or within 20 days of expiry. Mount `/application/data` to persist certificates, configs and logs. The provided TLS snippets are tuned for an SSL Labs A rating.
 
 ![SSL Labs rating](./doc/image/ssllabs.png)
 
@@ -66,30 +66,45 @@ By default it runs HTTP on 8080 (TLS_MODE=off). To enable HTTPS, set TLS_MODE=cu
 
 ## Quick start
 
-### Minimal HTTP and HTTPS:
+### Minimal HTTP (no TLS)
 
 ```bash
 docker run -d \
+  --name nginx-demo \
   -p 80:8080 \
-  -p 443:8443 \
+  -v $(pwd)/data:/application/data \
   jschnabel/nginx:latest
 ```
 
-### With Compose:
+Browse to `http://localhost/` (port 80 forwarded to internal 8080) and you’ll see the bundled welcome page. All runtime data lives under `./data` on the host.
+
+### ACME-powered HTTPS with Docker Compose
 
 ```yml
 services:
   nginx:
     image: jschnabel/nginx:latest
     container_name: nginx
+    restart: unless-stopped
     ports:
-      - "80:8080"
-      - "443:8443"
+      - "80:8080"   # HTTP (required for ACME HTTP-01)
+      - "443:8443"  # HTTPS
+    environment:
+      - TLS_MODE=acme
+      - FORCE_TLS=true
+      - ACME_MAIL=admin@example.com
+      - ACME_SERVER=letsencrypt
+      - ACME_ECC=true
+      - ACME_KEYLENGTH=ec-384
+    volumes:
+      - ./data:/application/data
 ```
 
-Open your IP/domain in a browser — you should see the test page.
+Create your site config in `./data/sites-enabled/*.conf`, point `server_name` to your public domain and make sure ports 80/443 reach the container. The entrypoint issues/renews Let’s Encrypt certificates automatically.
 
 ## Example Usages
+
+The snippets below assume you persist the full data directory, e.g. `- ./data:/application/data`. You can additionally bind specific subfolders (webroot, sites-enabled, …) if you prefer a more granular layout.
 
 ### Serve static content
 
@@ -101,12 +116,14 @@ services:
       - "80:8080"
       - "443:8443"
     volumes:
-      - ./nginx/webroot:/application/data/webroot
+      - ./data:/application/data
 ```
+
+Put your static assets into `./data/webroot/<your.domain>/` and create matching server blocks under `./data/sites-enabled/`.
 
 ### Custom configurations
 
-All `.conf` files from `/application/data/sites-enabled` and `/application/data/streams` are loaded.
+All `.conf` files from `/application/data/sites-enabled` and `/application/data/streams` are loaded. If you prefer granular host paths instead of a single data mount, bind the directories you manage explicitly:
 
 ```yml
 services:
@@ -118,6 +135,8 @@ services:
       - ./nginx/sites:/application/data/sites-enabled
       - ./nginx/streams:/application/data/streams
 ```
+
+> Tip: When you bind individual directories, ensure ownership/permissions allow UID/GID 1001 to read (and write where necessary).
 
 Example site (HTTP->HTTPS redirect + TLS):
 
@@ -217,21 +236,20 @@ server {
 
 ### Environment variables (runtime)
 
-| Variable        | Values                              | Default     | Required | Description                                      |
-|-----------------|-------------------------------------|-------------|----------|--------------------------------------------------|
-| TLS_MODE        | off, custom, acme                   | off         | No       | TLS mode (off=HTTP only; custom=use local certs; acme=Let’s Encrypt) |
-| FORCE_TLS       | true, false                         | false       | No       | Force HTTP→HTTPS redirect                        |
-| OUTPUT_FORMAT   | human, json                         | human       | No       | Entrypoint log format                            |
-| ACME_MAIL       | email address                       | —           | Yes (acme) | Account email for ACME                           |
-| ACME_SERVER     | letsencrypt, …                      | letsencrypt | No       | ACME CA server                                   |
-| ACME_ECC        | true, false                         | true        | No       | Use ECDSA (true) or RSA (false)                  |
-| ACME_KEYLENGTH  | ec-256, ec-384, 3072, 4096          | ec-384      | No       | Key length (use 3072/4096 for RSA)               |
-| ACME_DEBUG      | true, false                         | false       | No       | Verbose ACME run (`acme.sh --debug 2`)           |
-| ACME_FORCE      | true, false                         | false       | No       | Force ACME issuance/renewal (`acme.sh --force`)   |
-| ACME_CA_BUNDLE  | path to PEM file                    | (empty)     | No       | Extra CA bundle file passed to `--ca-bundle`     |
-| CA store dir*   | /application/data/certs/acmesh/ca   | (auto)      | No       | Directory of custom CA PEMs hashed & used via `--ca-path` |
+| Variable        | Values                              | Default     | Required | Description |
+|-----------------|-------------------------------------|-------------|----------|-------------|
+| `TLS_MODE`      | `off`, `custom`, `acme`              | `off`       | No       | Select the TLS workflow. `off` exposes only HTTP on 8080, `custom` expects cert/key pairs in `/application/data/certs`, `acme` provisions via Let’s Encrypt (acme.sh) and falls back to self-signed while waiting. |
+| `FORCE_TLS`     | `true`, `false`                      | `false`     | No       | When `true` the default HTTP server issues 301 redirects to HTTPS using the bundled redirect config. |
+| `OUTPUT_FORMAT` | `human`, `json`                      | `human`     | No       | Controls entrypoint logging style (emoji-rich human output or structured JSON objects). |
+| `ACME_MAIL`     | Email address                        | —           | Yes (`TLS_MODE=acme`) | Account email passed to acme.sh for Let’s Encrypt registration. |
+| `ACME_SERVER`   | `letsencrypt`, `letsencrypt_test`, custom URL | `letsencrypt` | No | Choose production, staging, or a custom ACME directory URL. |
+| `ACME_ECC`      | `true`, `false`                      | `true`      | No       | Issue ECDSA certificates when `true`; switch to RSA when `false`. |
+| `ACME_KEYLENGTH`| `ec-256`, `ec-384`, `3072`, `4096`   | `ec-384`    | No       | Select curve/bit length. When `ACME_ECC=false`, only numeric values are accepted. |
+| `ACME_DEBUG`    | `true`, `false`                      | `false`     | No       | Adds `--debug 2` to acme.sh for verbose troubleshooting output. |
+| `ACME_FORCE`    | `true`, `false`                      | `false`     | No       | Forces acme.sh to re-issue immediately (overrides the built-in 20-day renewal window). |
+| `ACME_CA_BUNDLE`| Absolute path to PEM bundle          | (empty)     | No       | Optional custom trust store forwarded to acme.sh via `--ca-bundle`. Combine with dropping CA files into `/application/data/certs/acmesh/ca`. |
 
-*Not an env var: provide PEM files in that directory to extend/override trust.
+*Tip: Drop additional CA certificates (PEM) into `/application/data/certs/acmesh/ca/`; the entrypoint runs `openssl rehash` on this directory before every ACME invocation.
 
 ### Container ports
 
@@ -286,6 +304,8 @@ services:
       - TLS_MODE=off
     ports:
       - "80:8080"
+    volumes:
+      - ./data:/application/data
 ```
 
 ## Security
@@ -395,6 +415,7 @@ Tips:
 - Certificates are grouped per server block by its `server_name` list. Use separate site files if you need different cert groupings.
 - Do not block `/.well-known/acme-challenge/` in custom locations.
 - Debugging: set `ACME_DEBUG=true` to surface detailed `acme.sh` output (kept off in production to reduce noise).
+- Renewal triggers: existing certs are replaced when they are self-signed or have 20 days (or less) remaining, ensuring timely ACME renewals without manual checks.
 - Custom trust (private PKI / TLS interception):
   - Drop one PEM per CA into `/application/data/certs/acmesh/ca/` (e.g. `corp-root.pem`).
   - On each ACME run the entrypoint executes `openssl rehash /application/data/certs/acmesh/ca` and always invokes `acme.sh` with `--ca-path /application/data/certs/acmesh/ca`.

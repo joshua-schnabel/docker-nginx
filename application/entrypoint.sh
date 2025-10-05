@@ -412,6 +412,9 @@ EOF
                 if [ "$subject" = "$issuer" ]; then
                     need_cert=true
                     log "INFO" "🛡️" "Certificate for $group is self-signed, will request ACME certificate"
+                elif ! openssl x509 -checkend $((20*24*3600)) -noout -in "$cert_path.pem" 2>/dev/null; then
+                    need_cert=true
+                    log "INFO" "🛡️" "Certificate for $group expires within 20 days, renewal needed"
                 fi
             fi
 
