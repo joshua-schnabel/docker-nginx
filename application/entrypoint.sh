@@ -21,6 +21,7 @@ L_KEYLENGTH="${ACME_KEYLENGTH:-ec-384}"
 L_OUTPUT_FORMAT="${OUTPUT_FORMAT:-human}"
 L_ACME_DEBUG="${ACME_DEBUG:-false}"  # Enable acme.sh debug output when true
 L_ACME_CA_BUNDLE="${ACME_CA_BUNDLE:-}"  # Optional custom CA bundle file path for acme.sh
+L_ACME_FORCE="${ACME_FORCE:-false}"  # Force ACME issuance/renewal when true
 
 L_COMMAND=("$@")
 
@@ -85,6 +86,11 @@ if [[ ! "$L_ACME_DEBUG" =~ ^(true|false)$ ]]; then
     exit 1
 fi
 
+if [[ ! "$L_ACME_FORCE" =~ ^(true|false)$ ]]; then
+    log "ERROR" "🔧" "Invalid ACME_FORCE: $L_ACME_FORCE. Must be: true or false" >&2
+    exit 1
+fi
+
 # Validate optional CA bundle path if provided (must exist and be a regular file)
 if [ -n "$L_ACME_CA_BUNDLE" ]; then
     if [ ! -f "$L_ACME_CA_BUNDLE" ]; then
@@ -123,7 +129,7 @@ fi
 
 log "INFO" "📋" "Nginx version: ${nginxlocal} | Container version: ${containerv}"
 
-log "INFO" "🔧" "TLS_MODE: $L_TLS_MODE | FORCE_TLS: $L_FORCE_TLS | ACME_DEBUG: $L_ACME_DEBUG"
+log "INFO" "🔧" "TLS_MODE: $L_TLS_MODE | FORCE_TLS: $L_FORCE_TLS | ACME_DEBUG: $L_ACME_DEBUG | ACME_FORCE: $L_ACME_FORCE"
 if [ -n "$L_ACME_CA_BUNDLE" ]; then
     log "INFO" "🔧" "ACME_CA_BUNDLE: $L_ACME_CA_BUNDLE"
 fi
@@ -408,6 +414,11 @@ EOF
                     log "INFO" "🛡️" "Certificate for $group is self-signed, will request ACME certificate"
                 fi
             fi
+
+            if [ "$L_ACME_FORCE" = "true" ]; then
+                log "WARN" "🛡️" "ACME_FORCE is enabled, forcing renewal for $group"
+                need_cert=true
+            fi
             if [ "$need_cert" = true ]; then
                 log "INFO" "🛡️" "Starting acme.sh for: $group (Webroot: $WEBROOT, Server: $L_ACME_SERVER, ECC: $L_ECC, KeyLength: $L_KEYLENGTH)"
                 
@@ -422,6 +433,10 @@ EOF
                 # Add debug flag if enabled
                 if [ "$L_ACME_DEBUG" = "true" ]; then
                     acme_cmd="$acme_cmd --debug 2"
+                fi
+
+                if [ "$L_ACME_FORCE" = "true" ]; then
+                    acme_cmd="$acme_cmd --force"
                 fi
                 
                 # Add ECC and keylength parameters if ECC is enabled

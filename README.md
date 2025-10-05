@@ -227,6 +227,7 @@ server {
 | ACME_ECC        | true, false                         | true        | No       | Use ECDSA (true) or RSA (false)                  |
 | ACME_KEYLENGTH  | ec-256, ec-384, 3072, 4096          | ec-384      | No       | Key length (use 3072/4096 for RSA)               |
 | ACME_DEBUG      | true, false                         | false       | No       | Verbose ACME run (`acme.sh --debug 2`)           |
+| ACME_FORCE      | true, false                         | false       | No       | Force ACME issuance/renewal (`acme.sh --force`)   |
 | ACME_CA_BUNDLE  | path to PEM file                    | (empty)     | No       | Extra CA bundle file passed to `--ca-bundle`     |
 | CA store dir*   | /application/data/certs/acmesh/ca   | (auto)      | No       | Directory of custom CA PEMs hashed & used via `--ca-path` |
 
@@ -320,6 +321,7 @@ services:
       - ACME_SERVER=letsencrypt
       - ACME_ECC=true
       - ACME_KEYLENGTH=ec-384
+      - ACME_FORCE=false # set true to force immediate ACME issuance/renewal
       - OUTPUT_FORMAT=human
     volumes:
       - ./data:/application/data:rw
