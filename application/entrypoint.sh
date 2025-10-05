@@ -441,14 +441,33 @@ EOF
                 fi
                 
                 # Execute acme.sh command
-                if eval $acme_cmd; then
-                    # Enforce secure permissions on issued files
-                    chmod 600 "$cert_path.key" 2>/dev/null || true
-                    chmod 640 "$cert_path.pem" "$cert_path.fullchain.pem" 2>/dev/null || true
-                    log "SUCCESS" "🛡️" "acme.sh succeeded for $group"
-                else
-                    log "ERROR" "🛡️" "acme.sh failed for $group"
+                set +e
+                acme_output=$(eval "$acme_cmd" 2>&1)
+                acme_status=$?
+                set -e
+                if [ -n "$acme_output" ]; then
+                    printf '%s\n' "$acme_output"
                 fi
+
+                case "$acme_status" in
+                    0)
+                        # Enforce secure permissions on issued files
+                        chmod 600 "$cert_path.key" 2>/dev/null || true
+                        chmod 640 "$cert_path.pem" "$cert_path.fullchain.pem" 2>/dev/null || true
+                        log "SUCCESS" "🛡️" "acme.sh succeeded for $group"
+                        ;;
+                    2)
+                        # acme.sh uses exit status 2 to indicate "no renewal needed"
+                        log "INFO" "🛡️" "acme.sh skipped renewal for $group (certificate not due yet)"
+                        ;;
+                    *)
+                        if echo "$acme_output" | grep -qiE 'Skipping\. Next renewal time is|No need to renew'; then
+                            log "INFO" "🛡️" "acme.sh skipped renewal for $group (certificate not due yet)"
+                        else
+                            log "ERROR" "🛡️" "acme.sh failed for $group (exit code $acme_status)"
+                        fi
+                        ;;
+                esac
             else
                 log "INFO" "🛡️" "acme.sh: Certificate for $group already exists and is valid"
             fi

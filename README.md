@@ -225,7 +225,12 @@ server {
 | ACME_MAIL       | email address                       | —           | Yes (acme) | Account email for ACME                           |
 | ACME_SERVER     | letsencrypt, …                      | letsencrypt | No       | ACME CA server                                   |
 | ACME_ECC        | true, false                         | true        | No       | Use ECDSA (true) or RSA (false)                  |
-| ACME_KEYLENGTH  | ec-256, ec-384, 3072, 4096          | ec-384      | No       | Key length (use 3072/4096 for RSA)              |
+| ACME_KEYLENGTH  | ec-256, ec-384, 3072, 4096          | ec-384      | No       | Key length (use 3072/4096 for RSA)               |
+| ACME_DEBUG      | true, false                         | false       | No       | Verbose ACME run (`acme.sh --debug 2`)           |
+| ACME_CA_BUNDLE  | path to PEM file                    | (empty)     | No       | Extra CA bundle file passed to `--ca-bundle`     |
+| CA store dir*   | /application/data/certs/acmesh/ca   | (auto)      | No       | Directory of custom CA PEMs hashed & used via `--ca-path` |
+
+*Not an env var: provide PEM files in that directory to extend/override trust.
 
 ### Container ports
 
@@ -387,6 +392,15 @@ Tips:
 - For testing rates/limits use the staging CA: `ACME_SERVER=letsencrypt_test`.
 - Certificates are grouped per server block by its `server_name` list. Use separate site files if you need different cert groupings.
 - Do not block `/.well-known/acme-challenge/` in custom locations.
+- Debugging: set `ACME_DEBUG=true` to surface detailed `acme.sh` output (kept off in production to reduce noise).
+- Custom trust (private PKI / TLS interception):
+  - Drop one PEM per CA into `/application/data/certs/acmesh/ca/` (e.g. `corp-root.pem`).
+  - On each ACME run the entrypoint executes `openssl rehash /application/data/certs/acmesh/ca` and always invokes `acme.sh` with `--ca-path /application/data/certs/acmesh/ca`.
+  - Optionally supply a monolithic file via `ACME_CA_BUNDLE=/application/data/certs/custom-bundle.pem` (concatenated PEMs). Both directory (`--ca-path`) and bundle (`--ca-bundle`) are then available to OpenSSL.
+  - Effect: lets ACME validation succeed when corporate proxies replace certificates or when using internal ACME endpoints. Hashing speeds issuer lookup versus scanning a large flat bundle.
+  - Updating trust: add/remove PEMs then restart the container (or wait for next ACME cycle). Hashes regenerate automatically.
+  - Verification inside container: `ls -l /application/data/certs/acmesh/ca` should show hash symlinks like `abcd1234.0` pointing to your PEMs.
+  - If you do not need custom trust, simply leave the directory empty (it is still passed but unused). Avoid placing unrelated certs to keep trust surface minimal.
 
 ## Metrics & health
 
