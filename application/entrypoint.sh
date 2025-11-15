@@ -299,6 +299,12 @@ generate_ssl_certificates() {
                     # Set secure permissions on private key and cert
                     chmod 600 "$key_file"
                     chmod 640 "$cert_file"
+                    
+                    # Create fullchain.pem (copy of cert for self-signed)
+                    fullchain_file="/application/data/certs/${cert_name}.fullchain.pem"
+                    cp "$cert_file" "$fullchain_file"
+                    chmod 640 "$fullchain_file"
+                    
                     log "SUCCESS" "🔐" "Certificate for $group created successfully with secure permissions"
                 else
                     log "ERROR" "🔐" "OpenSSL certificate generation failed for $group"
