@@ -159,7 +159,7 @@ jobs:
             ALPINEVERSION=${{ needs.prepare.outputs.ALPINEVERSION }}
             VENDORVERSION=${{ needs.prepare.outputs.VENDORVERSION }}
       - name: Trivy scan image (fail on HIGH/CRITICAL)
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.IMAGE_NAME }}:ci-scan-amd64-${{ github.sha }}
           format: sarif
